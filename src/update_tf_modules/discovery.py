@@ -1,3 +1,8 @@
+import re
+from typing import Any
+
+from src.update_tf_modules.config import TERRAFORM_ROOT
+
 def normalize_discovered_source(source: str) -> str:
     """Normalize discovered module sources for manifest key comparison.
 

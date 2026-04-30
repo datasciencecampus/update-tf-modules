@@ -1,3 +1,17 @@
+from pathlib import Path
+from typing import Any
+
+import requests
+
+from src.update_tf_modules.clients.github_api import build_github_session, get_latest_github_tag, get_commit_hash_for_tag
+from src.update_tf_modules.clients.registry_api import build_registry_session, get_latest_registry_version
+from src.update_tf_modules.config import DEFAULT_MANIFEST_PATH
+from src.update_tf_modules.manifest import load_manifest, validate_manifest_modules
+from src.update_tf_modules.discovery import warn_on_unmanaged_modules
+from src.update_tf_modules.targets import resolve_targets
+from src.update_tf_modules.updaters.github_source import update_github_module
+from src.update_tf_modules.updaters.registry_source import update_registry_module
+
 def main(manifest_path: Path = DEFAULT_MANIFEST_PATH) -> None:
     """Run the module update workflow for all manifest entries.
 

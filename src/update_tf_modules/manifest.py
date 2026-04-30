@@ -1,3 +1,10 @@
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+from src.update_tf_modules.targets import resolve_targets
+
 def load_manifest(manifest_path: Path) -> list[dict[str, Any]]:
     """Load and validate the top-level module list from a manifest file.
 

@@ -1,3 +1,9 @@
+import re
+
+import requests
+
+from src.update_tf_modules.config import TERRAFORM_REGISTRY_API
+
 def build_registry_session() -> requests.Session:
     """Create an HTTP session configured for Terraform Registry requests.
 
@@ -48,7 +54,7 @@ def get_latest_registry_version(
         return None
     
 
-def semver_key(version: str) -> tuple[tuple[int, Any], ...]:
+def semver_key(version: str) -> tuple[tuple[int, int | str], ...]:
     """Build a sortable key for semantic-like version strings.
 
     Args:
@@ -58,7 +64,7 @@ def semver_key(version: str) -> tuple[tuple[int, Any], ...]:
         A tuple key that allows mixed numeric and non-numeric comparison.
     """
     parts = re.split(r"[.+-]", version.lstrip("v"))
-    key: list[tuple[int, Any]] = []
+    key: list[tuple[int, int | str]] = []
     for part in parts:
         if part.isdigit():
             key.append((0, int(part)))

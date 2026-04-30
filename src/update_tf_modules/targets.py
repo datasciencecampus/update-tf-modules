@@ -1,3 +1,8 @@
+from pathlib import Path
+from typing import Any
+
+from src.update_tf_modules.config import ROOT
+
 def resolve_targets(module: dict[str, Any]) -> list[Path]:
     """Resolve one or more target files for a module manifest entry.
 

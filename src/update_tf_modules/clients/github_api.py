@@ -1,3 +1,10 @@
+import os
+
+import requests
+
+from src.update_tf_modules.config import GITHUB_API
+
+
 def build_github_session() -> requests.Session:
     """Create an HTTP session configured for GitHub API requests.
 
