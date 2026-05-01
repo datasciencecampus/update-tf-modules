@@ -8,7 +8,7 @@ on:
       manifest_path:
         description: "Path to manifest file in this repository"  
         required: false
-        default: .github/module-update-manifest.yml
+        default: .github/update-modules-manifest.yml
         type: string
 
 permissions:
