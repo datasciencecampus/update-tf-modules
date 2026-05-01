@@ -15,7 +15,7 @@ def load_manifest(manifest_path: Path) -> list[Module]:
         A non-empty list of module definition dictionaries.
 
     Raises:
-        ValueError: If the manifest does not contain a non-empty modules list.
+        ValueError: If the manifest does not contain a non-empty modules list or if any module is not a mapping.
     """
     with manifest_path.open("r", encoding="utf-8") as f:
         data: Any = yaml.safe_load(f) or {}
