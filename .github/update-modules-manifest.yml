@@ -1,0 +1,14 @@
+modules:
+  - name: terraform-gcs-remote-state-bootstrap
+    type: github
+    repo: datasciencecampus/terraform-gcs-remote-state-bootstrap
+    lookup: release
+    pin: sha
+    glob: terraform/**/*.tf
+    source_prefix: git::https://github.com/datasciencecampus/terraform-gcs-remote-state-bootstrap.git?ref=
+  
+  # # Example registry module entry
+  # - name: terraform-google-network
+  #   type: registry
+  #   source: terraform-google-modules/network/google
+  #   glob: terraform/**/*.tf
