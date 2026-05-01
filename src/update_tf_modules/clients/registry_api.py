@@ -2,7 +2,7 @@ import re
 
 import requests
 
-from src.update_tf_modules.config import TERRAFORM_REGISTRY_API
+from ..config import TERRAFORM_REGISTRY_API
 
 def build_registry_session() -> requests.Session:
     """Create an HTTP session configured for Terraform Registry requests.

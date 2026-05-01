@@ -2,7 +2,7 @@ import os
 
 import requests
 
-from src.update_tf_modules.config import GITHUB_API
+from ..config import GITHUB_API
 
 
 def build_github_session() -> requests.Session:

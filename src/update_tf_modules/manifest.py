@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
-from src.update_tf_modules.targets import resolve_targets
+from .models import Module, parse_modules
 
-def load_manifest(manifest_path: Path) -> list[dict[str, Any]]:
+def load_manifest(manifest_path: Path) -> list[Module]:
     """Load and validate the top-level module list from a manifest file.
 
     Args:
@@ -18,43 +18,17 @@ def load_manifest(manifest_path: Path) -> list[dict[str, Any]]:
         ValueError: If the manifest does not contain a non-empty modules list.
     """
     with manifest_path.open("r", encoding="utf-8") as f:
-        manifest = yaml.safe_load(f) or {}
+        data: Any = yaml.safe_load(f) or {}
 
-    modules = manifest.get("modules")
-    if not isinstance(modules, list) or not modules:
+    if not isinstance(data, dict):
+        raise ValueError("Manifest must be a mapping")
+
+    raw_modules = data.get("modules")
+    if not isinstance(raw_modules, list) or not raw_modules:
         raise ValueError("Manifest must contain a non-empty 'modules' list.")
 
-    return modules
+    if not all(isinstance(module, dict) for module in raw_modules):
+        raise ValueError("Each manifest module must be a mapping")
 
-
-def validate_manifest_modules(modules: list[dict[str, Any]]) -> None:
-    """Validate required fields and target files for manifest module entries.
-
-    Args:
-        modules: Manifest module definitions to validate.
-
-    Raises:
-        ValueError: If entries are missing required fields or use unsupported types.
-        FileNotFoundError: If any declared target paths are invalid.
-    """
-    for module in modules:
-        if "name" not in module or "type" not in module:
-            raise ValueError("Each manifest entry must define at least 'name' and 'type'.")
-
-        if module["type"] == "github":
-            required = {"repo", "source_prefix"}
-        elif module["type"] == "registry":
-            required = {"source"}
-        else:
-            raise ValueError(
-                f"Module '{module['name']}' has unsupported type '{module['type']}'."
-            )
-
-        missing = [field for field in required if field not in module]
-        if missing:
-            raise ValueError(
-                f"Module '{module['name']}' is missing required fields: {', '.join(missing)}"
-            )
-
-        resolve_targets(module)
-
+    return parse_modules(cast(list[dict[str, object]], raw_modules))
+        

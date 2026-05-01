@@ -1,7 +1,7 @@
 from pathlib import Path
 import re
 
-from src.update_tf_modules.config import ROOT
+from ..config import ROOT
 
 def update_registry_module(
     file_path: Path,

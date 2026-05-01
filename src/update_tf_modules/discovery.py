@@ -1,7 +1,7 @@
 import re
-from typing import Any
 
-from src.update_tf_modules.config import TERRAFORM_ROOT
+from .config import TERRAFORM_ROOT
+from .models import GitHubModule, Module
 
 def normalize_discovered_source(source: str) -> str:
     """Normalize discovered module sources for manifest key comparison.
@@ -52,7 +52,7 @@ def discover_module_sources() -> set[str]:
     return discovered
 
 
-def managed_source_keys(modules: list[dict[str, Any]]) -> set[str]:
+def managed_source_keys(modules: list[Module]) -> set[str]:
     """Build the set of module sources managed by the manifest.
 
     Args:
@@ -63,14 +63,14 @@ def managed_source_keys(modules: list[dict[str, Any]]) -> set[str]:
     """
     keys: set[str] = set()
     for module in modules:
-        if module["type"] == "github":
-            keys.add(module["source_prefix"])
-        elif module["type"] == "registry":
-            keys.add(module["source"])
+        if isinstance(module, GitHubModule):
+            keys.add(module.source_prefix)
+        else:
+            keys.add(module.source)
     return keys
 
 
-def warn_on_unmanaged_modules(modules: list[dict[str, Any]]) -> None:
+def warn_on_unmanaged_modules(modules: list[Module]) -> None:
     """Print warnings for Terraform module sources missing from the manifest.
 
     Args:
