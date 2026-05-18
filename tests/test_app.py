@@ -91,7 +91,7 @@ def test_app_integration(
     monkeypatch.setattr(github_source, "ROOT", tmp_root)
     monkeypatch.setattr(registry_source, "ROOT", tmp_root)
 
-    # Mock only the network/API calls
+    # Mock API calls
     monkeypatch.setattr(
         "update_tf_modules.app.get_latest_github_tag",
         lambda s, r, l: "v2.0.0"
