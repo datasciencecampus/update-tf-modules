@@ -1,5 +1,7 @@
-import pytest
 from pathlib import Path
+
+import pytest
+
 from update_tf_modules.updaters.github_source import update_github_module
 
 
