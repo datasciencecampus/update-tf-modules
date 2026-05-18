@@ -16,14 +16,7 @@ def resolve_targets(module: BaseModule) -> list[Path]:
 
     """
     if module.files is not None:
-        targets = [ROOT / Path(file_name) for file_name in module.files]
+        return [ROOT / Path(file_name) for file_name in module.files]
     elif module.file is not None:
-        targets = [ROOT / Path(module.file)]
-    elif module.glob is not None:
-        targets = sorted(ROOT.glob(module.glob))
-    else:
-        raise ValueError(
-            f"Module '{module.name}' has no target selector configured; expected one of glob/file/files."
-        )
-
-    return targets
+        return [ROOT / Path(module.file)]
+    return sorted(ROOT.glob(module.glob))
