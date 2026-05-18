@@ -15,7 +15,7 @@ def update_github_module(
 
     Args:
         file_path: Terraform file to update.
-        source_prefix: Source prefix ending with ?ref=.
+        source_prefix: Source prefix ending with '?ref='.
         new_ref: New ref value to set.
 
     Returns:
