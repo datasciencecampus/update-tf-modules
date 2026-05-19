@@ -1,15 +1,87 @@
 name: Update Terraform module versions
 
 on:
+  workflow_call:
+    inputs:
+      manifest_path:
+        description: "Path to manifest file in the target repository"
+        required: false
+        type: string
+        default: .github/update-modules-manifest.yml
+      terraform_root:
+        description: "Root directory containing Terraform code to validate and include in PRs"
+        required: false
+        type: string
+        default: terraform
+      python_version:
+        description: "Python version used to run update-tf-modules"
+        required: false
+        type: string
+        default: "3.12"
+      base_branch:
+        description: "Base branch for pull requests"
+        required: false
+        type: string
+        default: main
+      pr_branch_name:
+        description: "Branch name used when creating pull requests"
+        required: false
+        type: string
+        default: automation/update-terraform-modules
+      create_pr:
+        description: "Whether to create a pull request after changes are made"
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      token:
+        description: "GitHub token used for API calls and pull request creation"
+        required: false
+    outputs:
+      changed:
+        description: "Whether Terraform files changed in terraform_root"
+        value: ${{ jobs.update-modules.outputs.changed }}
+      pr_number:
+        description: "Pull request number when a PR is created"
+        value: ${{ jobs.update-modules.outputs.pr_number }}
+      pr_url:
+        description: "Pull request URL when a PR is created"
+        value: ${{ jobs.update-modules.outputs.pr_url }}
+
   # schedule:
   #   - cron: "0 6 * * 1" # 6am Monday
   workflow_dispatch:
     inputs:
       manifest_path:
-        description: "Path to manifest file in this repository"  
+        description: "Path to manifest file in this repository"
         required: false
         default: .github/update-modules-manifest.yml
         type: string
+      terraform_root:
+        description: "Root directory containing Terraform code to validate and include in PRs"
+        required: false
+        default: terraform
+        type: string
+      python_version:
+        description: "Python version used to run update-tf-modules"
+        required: false
+        default: "3.12"
+        type: string
+      base_branch:
+        description: "Base branch for pull requests"
+        required: false
+        default: main
+        type: string
+      pr_branch_name:
+        description: "Branch name used when creating pull requests"
+        required: false
+        default: automation/update-terraform-modules
+        type: string
+      create_pr:
+        description: "Whether to create a pull request after changes are made"
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: write
@@ -18,6 +90,10 @@ permissions:
 jobs:
   update-modules:
     runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.detect_changes.outputs.changed }}
+      pr_number: ${{ steps.create_pull_request.outputs.pull-request-number }}
+      pr_url: ${{ steps.create_pull_request.outputs.pull-request-url }}
 
     steps:
       - name: Checkout repository
@@ -26,7 +102,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ inputs.python_version }}
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
@@ -38,7 +114,7 @@ jobs:
 
       - name: Run module update script
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.token || secrets.GITHUB_TOKEN }}
         run: |
           update-tf-modules --manifest-path "${{ inputs.manifest_path }}"
 
@@ -46,21 +122,35 @@ jobs:
         run: |
           git status --short
           git diff --stat
-          git diff -- terraform
+          git diff -- "${{ inputs.terraform_root }}"
+
+      - name: Detect Terraform changes
+        id: detect_changes
+        run: |
+          if git diff --quiet -- "${{ inputs.terraform_root }}"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No Terraform changes detected under ${{ inputs.terraform_root }}"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Terraform changes detected under ${{ inputs.terraform_root }}"
+          fi
 
       - name: Check Terraform formatting
+        if: ${{ steps.detect_changes.outputs.changed == 'true' }}
         run: |
-          terraform fmt -check -recursive terraform
+          terraform fmt -check -recursive "${{ inputs.terraform_root }}"
 
       - name: Create pull request
+        id: create_pull_request
+        if: ${{ inputs.create_pr && steps.detect_changes.outputs.changed == 'true' }}
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "chore(update-tf-modules): update Terraform module versions"
           title: Update Terraform module versions
           body: |
             Automated update of Terraform module versions.
-          branch: automation/update-terraform-modules
-          base: main
+          branch: ${{ inputs.pr_branch_name }}
+          base: ${{ inputs.base_branch }}
           delete-branch: true
           add-paths: |
-            terraform/**/*.tf
+            ${{ inputs.terraform_root }}/**/*.tf
