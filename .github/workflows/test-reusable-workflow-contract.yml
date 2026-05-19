@@ -1,0 +1,12 @@
+name: Test reusable workflow contract
+
+on:
+  workflow_dispatch:
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Placeholder
+        run: echo "Stub workflow on main for discoverability"
+
