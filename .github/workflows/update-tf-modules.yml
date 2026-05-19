@@ -83,13 +83,16 @@ on:
         default: true
         type: boolean
 
-permissions:
-  contents: write
-  pull-requests: write
+concurrency:
+  group: update-tf-modules-${{ github.repository }}-${{ inputs.base_branch || github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
   update-modules:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     outputs:
       changed: ${{ steps.detect_changes.outputs.changed }}
       pr_number: ${{ steps.create_pull_request.outputs.pull-request-number }}
@@ -145,6 +148,7 @@ jobs:
         if: ${{ inputs.create_pr && steps.detect_changes.outputs.changed == 'true' }}
         uses: peter-evans/create-pull-request@v8
         with:
+          token: ${{ secrets.token || secrets.GITHUB_TOKEN }}
           commit-message: "chore(update-tf-modules): update Terraform module versions"
           title: Update Terraform module versions
           body: |
