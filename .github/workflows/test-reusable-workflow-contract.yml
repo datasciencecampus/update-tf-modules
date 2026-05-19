@@ -2,11 +2,45 @@ name: Test reusable workflow contract
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/update-tf-modules.yml
+      - .github/workflows/test-reusable-workflow-contract.yml
+      - .github/update-modules-manifest.yml
+      - src/**
 
 jobs:
-  placeholder:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Placeholder
-        run: echo "Stub workflow on main for discoverability"
+  invoke-reusable-workflow:
+    uses: ./.github/workflows/update-tf-modules.yml
+    with:
+      manifest_path: .github/update-modules-manifest.yml
+      create_pr: false
 
+  validate-contract-outputs:
+    runs-on: ubuntu-latest
+    needs: invoke-reusable-workflow
+    steps:
+      - name: Assert output contract shape
+        env:
+          CHANGED: ${{ needs.invoke-reusable-workflow.outputs.changed }}
+          PR_NUMBER: ${{ needs.invoke-reusable-workflow.outputs.pr_number }}
+          PR_URL: ${{ needs.invoke-reusable-workflow.outputs.pr_url }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$CHANGED" != "true" && "$CHANGED" != "false" ]]; then
+            echo "Expected 'changed' output to be 'true' or 'false', got '$CHANGED'"
+            exit 1
+          fi
+
+          # This contract test disables PR creation, so PR metadata must stay empty.
+          if [[ -n "$PR_NUMBER" || -n "$PR_URL" ]]; then
+            echo "Expected empty PR metadata when create_pr=false"
+            echo "pr_number='$PR_NUMBER'"
+            echo "pr_url='$PR_URL'"
+            exit 1
+          fi
+
+          echo "Reusable workflow contract outputs are valid."
