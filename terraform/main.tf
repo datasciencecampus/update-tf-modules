@@ -3,10 +3,10 @@ terraform {
 }
 
 module "state_bootstrap" {
-  source = "git::https://github.com/datasciencecampus/terraform-gcs-remote-state-bootstrap.git?ref=v0.2.0"
+  source = "git::https://github.com/datasciencecampus/terraform-gcs-remote-state-bootstrap.git?ref=v1.1.1"
 }
 
 module "network" {
   source  = "terraform-google-modules/network/google"
-  version = "7.0.0"
+  version = "18.1.0"
 }
