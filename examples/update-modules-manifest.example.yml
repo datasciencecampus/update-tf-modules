@@ -1,0 +1,31 @@
+# Example manifest for update-tf-modules reusable workflow
+#
+# Top-level contract:
+# - Must be a mapping with a non-empty `modules` list.
+# - Each list item must be a module mapping.
+#
+# Selector contract (required for every module):
+# - Define exactly one of: `glob`, `file`, or `files`.
+# - Paths are relative to the repository root.
+
+modules:
+  - name: github-module-example
+    type: github
+    repo: your-org/terraform-gcs-remote-state-bootstrap
+    source_prefix: git::https://github.com/your-org/terraform-gcs-remote-state-bootstrap.git?ref=
+    lookup: release # optional: release|tag (default: release)
+    pin: sha # optional: sha|tag (default: sha)
+    glob: terraform/**/*.tf
+
+  - name: registry-module-example
+    type: registry
+    source: terraform-google-modules/network/google
+    file: terraform/main.tf
+
+  # Same registry module pinned across multiple files.
+  - name: registry-module-multi-file
+    type: registry
+    source: hashicorp/consul/aws
+    files:
+      - terraform/network.tf
+      - terraform/platform.tf
