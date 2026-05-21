@@ -1,0 +1,26 @@
+name: Run test suite
+
+on:
+  pull_request:
+    branches: [ "main" ] 
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@0b7fddb59649093a56628169173542667d3d0158 # v5.1.1
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@f98cd181fa656c45155f9a8f40776b9f2e96d9fa # v5
+        with:
+          enable-cache: true
+
+      - name: Run tests
+        run: uv run pytest
