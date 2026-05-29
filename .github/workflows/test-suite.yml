@@ -4,6 +4,8 @@ on:
   pull_request:
     branches: ["main"]
 
+permissions: {}
+
 jobs:
   run-tests:
     runs-on: ubuntu-latest
