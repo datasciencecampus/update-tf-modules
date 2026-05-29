@@ -1,0 +1,14 @@
+name: Run test suite
+
+on:
+  pull_request:
+    branches: ["main"]
+
+permissions: {}
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Placeholder
+        run: echo "Test suite workflow stub"
