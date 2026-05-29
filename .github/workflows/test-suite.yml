@@ -15,12 +15,12 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@0b7fddb59649093a56628169173542667d3d0158 # v5.1.1
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
           python-version: "3.12"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@f98cd181fa656c45155f9a8f40776b9f2e96d9fa # v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
         with:
           enable-cache: true
 
