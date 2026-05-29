@@ -3,6 +3,8 @@ name: Run test suite
 on:
   pull_request:
     branches: [ "main" ] 
+    
+permissions: {}
 
 jobs:
   run-tests:
