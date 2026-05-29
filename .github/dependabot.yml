@@ -11,7 +11,8 @@ updates:
         patterns: ["*"]
         update-types: ["minor", "patch"]
     labels: ["dependencies", "python"]
-    prefix: "chore(deps)"
+    commit-message:
+      prefix: "chore(deps)"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -23,4 +24,5 @@ updates:
       gh-actions-all:
         patterns: ["*"]
     labels: ["dependencies", "github-actions"]
-    prefix: "chore(deps)"
+    commit-message:
+      prefix: "chore(deps)"
