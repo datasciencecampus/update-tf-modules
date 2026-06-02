@@ -159,3 +159,28 @@ jobs:
 - If `create_pr=false`, the workflow still runs updates and checks, but does not create a PR.
 - If Terraform formatting check fails when changes exist, the workflow fails.
 - If PR creation fails (permissions, token scope, branch protection or API errors), the workflow fails.
+
+### Permissions Troubleshooting
+
+If PR creation fails with a permission or token error, check the following.
+
+1. **Caller job permissions**: Your job must declare the required permissions in its `permissions` block:
+   ```yaml
+   permissions:
+     contents: write
+     pull-requests: write
+   ```
+   Without these, the workflow cannot create branches or PRs even if a token is supplied.
+
+2. **Token scope**: If passing an explicit `token` secret, ensure it has:
+   - Read access to the caller repository (implicit for default GITHUB_TOKEN).
+   - Write access for contents and pull-requests (may require a Personal Access Token or GitHub App token with appropriate scopes).
+
+3. **Repository rules**: Check that your caller repository does not have:
+   - Branch protection rules that block automated PRs or commits.
+   - Required status checks that cannot pass for automation-created branches.
+   - Repository-level branch creation restrictions.
+
+4. **Public source checkout**: The updater source repository is public, so source checkout never requires a token. If the failure mentions source checkout, the issue is likely elsewhere in the pipeline.
+
+If the error persists after checking the above, examine the full workflow run logs in the Actions tab for the exact GitHub API response.
