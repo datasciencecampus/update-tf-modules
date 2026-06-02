@@ -48,8 +48,6 @@ on:
         description: "Pull request URL when a PR is created"
         value: ${{ jobs.update-modules.outputs.pr_url }}
 
-  # schedule:
-  #   - cron: "0 6 * * 1" # 6am Monday
   workflow_dispatch:
     inputs:
       manifest_path:
@@ -102,6 +100,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Resolve reusable workflow source
+        id: workflow_source
+        run: |
+          workflow_ref="${{ github.workflow_ref }}"
+          source_repo="${workflow_ref%%/.github/workflows/*}"
+          source_ref="${workflow_ref##*@}"
+
+          echo "repository=$source_repo" >> "$GITHUB_OUTPUT"
+          echo "ref=$source_ref" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout updater package source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ steps.workflow_source.outputs.repository }}
+          ref: ${{ steps.workflow_source.outputs.ref }}
+          path: .update-tf-modules-tool
+          token: ${{ secrets.token || secrets.GITHUB_TOKEN }}
+
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -113,7 +129,7 @@ jobs:
       - name: Install package
         run: |
           python -m pip install --upgrade pip
-          pip install .
+          pip install ./.update-tf-modules-tool
 
       - name: Run module update script
         env:
