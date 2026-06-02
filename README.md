@@ -65,12 +65,18 @@ This workflow currently has no required inputs.
 
 ### Secrets
 
-- `token` (optional): token used for GitHub API and PR creation.
+- `token` (optional): token used for authenticated GitHub API calls and PR creation in the caller repository.
 
 Token behavior:
 
-- If `token` is passed, it is used.
+- This repository is public, so source checkout does not require a secret.
+- If `token` is passed, it is used for GitHub API and PR operations.
 - If `token` is not passed, the workflow falls back to `GITHUB_TOKEN`.
+
+Permission behavior:
+
+- To create PRs (`create_pr=true`), the caller job token must have `contents: write` and `pull-requests: write`.
+- If `create_pr=false`, PR permissions are not required.
 
 ### Outputs
 
@@ -124,6 +130,9 @@ on:
 
 jobs:
   update:
+    permissions:
+      contents: write
+      pull-requests: write
     uses: ONS/cloud_enablement/update-tf-modules/.github/workflows/update-tf-modules.yml@v1
     with:
       manifest_path: .github/update-modules-manifest.yml
