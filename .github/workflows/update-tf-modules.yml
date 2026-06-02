@@ -164,6 +164,8 @@ jobs:
         id: create_pull_request
         if: ${{ inputs.create_pr && steps.detect_changes.outputs.changed == 'true' }}
         uses: peter-evans/create-pull-request@v8
+        continue-on-error: true
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.token || secrets.GITHUB_TOKEN }}
           commit-message: "chore(update-tf-modules): update Terraform module versions"
@@ -175,6 +177,21 @@ jobs:
           delete-branch: true
           add-paths: |
             ${{ inputs.terraform_root }}/**/*.tf
+
+      - name: Validate pull request creation result
+        if: ${{ inputs.create_pr && steps.detect_changes.outputs.changed == 'true' }}
+        run: |
+          if [[ "${{ steps.create_pull_request.outcome }}" != "success" ]]; then
+            echo "Pull request creation failed."
+            echo "Most common causes:"
+            echo "- Token lacks caller repository permissions (need contents: write and pull-requests: write)"
+            echo "- Caller workflow/job permissions are too restrictive"
+            echo "- Branch protection or repository rules blocked branch creation or PR updates"
+            echo ""
+            echo "For public-source mode, source checkout does not require a token."
+            echo "If needed, pass an explicit secret token via 'secrets.token'."
+            exit 1
+          fi
 
       - name: Publish workflow result summary
         if: ${{ always() }}
