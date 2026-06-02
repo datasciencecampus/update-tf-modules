@@ -120,28 +120,28 @@ Path behavior:
 name: Run shared module updater
 
 on:
-	workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
-	update:
-		uses: ONS/cloud_enablement/update-tf-modules/.github/workflows/update-tf-modules.yml@v1
-		with:
-			manifest_path: .github/update-modules-manifest.yml
-			terraform_root: terraform
-			base_branch: main
-			create_pr: true
-		secrets:
-			token: ${{ secrets.UPDATE_MODULES_TOKEN }}
+  update:
+    uses: ONS/cloud_enablement/update-tf-modules/.github/workflows/update-tf-modules.yml@v1
+    with:
+      manifest_path: .github/update-modules-manifest.yml
+      terraform_root: terraform
+      base_branch: main
+      create_pr: true
+    secrets:
+      token: ${{ secrets.UPDATE_MODULES_TOKEN }}
 
-	on-change:
-		if: ${{ needs.update.outputs.changed == 'true' }}
-		runs-on: ubuntu-latest
-		needs: update
-		steps:
-			- name: Print PR details
-				run: |
-					echo "PR number: ${{ needs.update.outputs.pr_number }}"
-					echo "PR URL: ${{ needs.update.outputs.pr_url }}"
+  on-change:
+    if: ${{ needs.update.outputs.changed == 'true' }}
+    runs-on: ubuntu-latest
+    needs: update
+    steps:
+      - name: Print PR details
+        run: |
+          echo "PR number: ${{ needs.update.outputs.pr_number }}"
+          echo "PR URL: ${{ needs.update.outputs.pr_url }}"
 ```
 
 ### Failure Modes And Exit Behavior
