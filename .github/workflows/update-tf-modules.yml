@@ -134,6 +134,8 @@ jobs:
       - name: Run module update script
         env:
           GITHUB_TOKEN: ${{ secrets.token || secrets.GITHUB_TOKEN }}
+          # Keep Python discovery aligned with workflow terraform_root input.
+          UPDATE_TF_MODULES_TARGET_TERRAFORM_ROOT: ${{ inputs.terraform_root }}
         run: |
           update-tf-modules --manifest-path "${{ inputs.manifest_path }}"
 
