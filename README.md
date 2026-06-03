@@ -184,3 +184,17 @@ If PR creation fails with a permission or token error, check the following.
 4. **Public source checkout**: The updater source repository is public, so source checkout never requires a token. If the failure mentions source checkout, the issue is likely elsewhere in the pipeline.
 
 If the error persists after checking the above, examine the full workflow run logs in the Actions tab for the exact GitHub API response.
+
+<!--
+Maintainer TODO Notes
+
+- Consider automating unit tests as part of a GitHub Actions workflow triggered by PRs into main, so reviewers do not need to run tests locally.
+- Consider setting up a dependabot.yml to keep this repository up to date.
+
+Documentation suggestions
+- Continue expanding this README where needed.
+- Diataxis documentation:
+  - Explain design decisions.
+  - Add a how-to guide for installing this tool in a repository.
+  - Add precise reference documentation for the manifest schema and variables.
+-->
