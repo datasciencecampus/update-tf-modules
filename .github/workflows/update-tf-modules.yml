@@ -33,13 +33,8 @@ on:
         required: false
         type: boolean
         default: true
-      updater_repository:
-        description: "Repository containing the update-tf-modules Python package"
-        required: false
-        type: string
-        default: datasciencecampus/update-tf-modules
       updater_ref:
-        description: "Git ref (branch/tag/SHA) for updater_repository"
+        description: "Git ref (branch/tag/SHA) for the update-tf-modules repository"
         required: false
         type: string
         default: add-workflow-wiring
@@ -90,13 +85,8 @@ on:
         required: false
         default: true
         type: boolean      
-      updater_repository:
-        description: "Repository containing the update-tf-modules Python package"
-        required: false
-        default: datasciencecampus/update-tf-modules
-        type: string
       updater_ref:
-        description: "Git ref (branch/tag/SHA) for updater_repository"
+        description: "Git ref (branch/tag/SHA) for the update-tf-modules repository"
         required: false
         default: add-workflow-wiring
         type: string
@@ -122,7 +112,7 @@ jobs:
       - name: Checkout updater package source
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
-          repository: ${{ inputs.updater_repository }}
+          repository: datasciencecampus/update-tf-modules
           ref: ${{ inputs.updater_ref }}
           path: .update-tf-modules-tool
 
