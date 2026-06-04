@@ -25,10 +25,19 @@ Consumers should reference a stable major tag, not main.
 
 - Default track: `@v1` for automatic non-breaking updates
 - Strict pinning: use an exact version tag such as `@v1.1.1` when change control is required
+- Maximum security: pin to a full commit SHA (e.g. `@abc1234...`) to prevent any risk from tag mutation or force-pushes — recommended for production pipelines
 
 ## Call This Workflow
 
 Use this repository workflow as a reusable contract from another workflow.
+
+For production use, pin to a full commit SHA. This is the most secure option as it is immutable and not affected by tag mutation or force-pushes:
+
+```yaml
+uses: ONS/cloud_enablement/update-tf-modules/.github/workflows/update-tf-modules.yml@<full-commit-sha> # vX.Y.Z
+```
+
+For convenience, you can track a stable major tag instead. This will receive non-breaking updates automatically:
 
 ```yaml
 uses: ONS/cloud_enablement/update-tf-modules/.github/workflows/update-tf-modules.yml@v1
@@ -122,6 +131,8 @@ Path behavior:
 
 ### Minimal Caller Example (Cross Repository)
 
+Pin to a full commit SHA for production use. Replace `<full-commit-sha>` with the SHA for the release you want to use.
+
 ```yaml
 name: Run shared module updater
 
@@ -133,7 +144,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: ONS/cloud_enablement/update-tf-modules/.github/workflows/update-tf-modules.yml@v1
+    uses: ONS/cloud_enablement/update-tf-modules/.github/workflows/update-tf-modules.yml@<full-commit-sha> # vX.Y.Z
     with:
       manifest_path: .github/update-modules-manifest.yml
       terraform_root: terraform
