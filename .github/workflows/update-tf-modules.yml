@@ -13,21 +13,11 @@ on:
         required: false
         type: string
         default: terraform
-      python_version:
-        description: "Python version used to run update-tf-modules"
-        required: false
-        type: string
-        default: "3.12"
       base_branch:
         description: "Base branch for pull requests"
         required: false
         type: string
         default: main
-      pr_branch_name:
-        description: "Branch name used when creating pull requests"
-        required: false
-        type: string
-        default: automation/update-terraform-modules
       create_pr:
         description: "Whether to create a pull request after changes are made"
         required: false
@@ -65,20 +55,10 @@ on:
         required: false
         default: terraform
         type: string
-      python_version:
-        description: "Python version used to run update-tf-modules"
-        required: false
-        default: "3.12"
-        type: string
       base_branch:
         description: "Base branch for pull requests"
         required: false
         default: main
-        type: string
-      pr_branch_name:
-        description: "Branch name used when creating pull requests"
-        required: false
-        default: automation/update-terraform-modules
         type: string
       create_pr:
         description: "Whether to create a pull request after changes are made"
@@ -119,7 +99,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
         with:
-          python-version: ${{ inputs.python_version }}
+          python-version: "3.12"
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
@@ -170,7 +150,7 @@ jobs:
           title: Update Terraform module versions
           body: |
             Automated update of Terraform module versions.
-          branch: ${{ inputs.pr_branch_name }}
+          branch: automation/update-terraform-modules
           base: ${{ inputs.base_branch }}
           delete-branch: true
           add-paths: |
