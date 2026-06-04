@@ -1,3 +1,6 @@
+# TODO: I think the source_prefix can be done away with here in favour of 
+# f"git::https://github.com/{repo}.git?ref=" in the actual code. Refactor?
+
 modules:
   - name: terraform-gcs-remote-state-bootstrap
     type: github
