@@ -5,7 +5,7 @@
 # - Each list item must be a module mapping.
 #
 # Selector contract (required for every module):
-# - Define exactly one of: `glob`, `file`, or `files`.
+# - Define exactly one of: `glob`, `file` or `files`.
 # - Paths are relative to the repository root.
 
 modules:

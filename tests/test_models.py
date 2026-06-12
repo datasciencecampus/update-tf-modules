@@ -41,7 +41,7 @@ def tests_base_module_accepts_one_selector(fields: dict[str, str | list[str]]):
 ])
 def test_base_module_rejects_invalid_selectors(fields):
     data = {"name": "mod", **fields}
-    with pytest.raises(ValueError, match="must define exactly one of 'glob', 'file', or 'files'"):
+    with pytest.raises(ValueError, match="must define exactly one of 'glob', 'file' or 'files'"):
         BaseModule(**data)
 
 
