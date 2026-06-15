@@ -16,7 +16,7 @@ modules:
     # ... module fields
 ```
 
-### `modules` (required, non-empty list)
+### `modules` (required, list)
 
 A list of module definitions. Must contain at least one module. Each item must be a mapping (object) following the schema below. The `modules` key must be present, non-empty and contain only objects.
 
@@ -45,9 +45,9 @@ type: registry      # Terraform Registry
 
 Specify exactly one of `glob`, `file` or `files` to select which Terraform files contain this module.
 
-#### `glob` (string)
+#### `glob` (optional, string)
 
-A glob pattern to match Terraform files. Resolved relative to the repository root. Glob patterns follow standard shell glob syntax; paths are relative to repository root (or `UPDATE_TF_MODULES_REPO_ROOT` environment variable); and multiple globs are not supported - use `files` list for multiple patterns.
+A glob pattern to match Terraform files. Resolved relative to the repository root. Glob patterns follow standard shell glob syntax; paths are relative to repository root (or `UPDATE_TF_MODULES_REPO_ROOT` environment variable); and multiple globs are not supported - use `files` for multiple patterns.
 
 ```yaml
 glob: "terraform/**/*.tf"
@@ -55,7 +55,7 @@ glob: "production/vpc/*.tf"
 glob: "*.tf"
 ```
 
-#### `file` (string)
+#### `file` (optional, string)
 
 A single Terraform file path. Resolved relative to the repository root. Exactly one file path; paths are relative to repository root; error if file does not exist.
 
@@ -63,9 +63,9 @@ A single Terraform file path. Resolved relative to the repository root. Exactly 
 file: "terraform/main.tf"
 ```
 
-#### `files` (list of strings)
+#### `files` (optional, list of strings)
 
-Multiple Terraform file paths. Resolved relative to the repository root. List must not be empty;each item is a string path; paths are relative to repository root
+Multiple Terraform file paths. Resolved relative to the repository root. List must not be empty; each item is a string path; paths are relative to repository root
 
 ```yaml
 files:
@@ -97,11 +97,11 @@ source_prefix: "git::https://github.com/terraform-aws-modules/terraform-aws-vpc.
 
 ### Optional Fields
 
-#### `lookup` (string, default: `"release"`)
+#### `lookup` (optional, string, default: `"release"`)
 
 Where to find the latest version: `"release"` (GitHub releases API, falls back to tags if none found) or `"tag"` (git tags only).
 
-#### `pin` (string, default: `"sha"`)
+#### `pin` (optional, string, default: `"sha"`)
 
 How to pin the version: `"sha"` pins to commit SHA (recommended); `"tag"` pins to release tag name (e.g., `v1.2.3`).
 
@@ -147,7 +147,7 @@ source: hashicorp/aws/aws
 
 All manifests must have:
 - A `modules` key containing a non-empty list
-- Each module must have `name`, `type` and exactly one target selector (`glob`, `file`, or `files`)
+- Each module must have `name`, `type` and exactly one target selector (`glob`, `file` or `files`)
 - `type` must be `github` or `registry`
 - GitHub modules must have `repo` and `source_prefix`
 - Registry modules must have `source`
@@ -241,6 +241,6 @@ Exit code `2` indicates a validation error. Check the log output for details.
 
 ## See Also
 
-- [Consumer Setup Guide](CONSUMER_SETUP.md) — Step-by-step integration
-- [Architecture & Design](ARCHITECTURE.md) — Design decisions and version discovery
-- [Permissions & Troubleshooting](PERMISSIONS_TROUBLESHOOTING.md) — Debugging help
+- [Consumer Setup Guide](../how-to/consumer-setup.md) — Step-by-step integration
+- [Architecture & Design](../explanation/architecture.md) — Design decisions and version discovery
+- [Permissions & Troubleshooting](../how-to/permissions-troubleshooting.md) — Debugging help

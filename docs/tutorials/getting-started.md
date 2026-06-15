@@ -134,7 +134,7 @@ Completed module update run. Replacements made: 1
 
 **If you're already up to date:** The output will read `Replacements made: 0` and no PR is created. This is expected — it means all your modules are already at the latest version.
 
-**If the run shows `Replacements made: 0` but you expected an update:** The most likely cause is a `source_prefix` that doesn't exactly match the source line in your `.tf` file. The tool does a literal string match, so even a small difference (a trailing space, a missing `?ref=`) means it won't find the module. Compare your manifest's `source_prefix` character-by-character against the file. A `[SKIP]` line in the logs means the API couldn't resolve a version; an `[ERROR]` line means an API call failed. See [Permissions & Troubleshooting](PERMISSIONS_TROUBLESHOOTING.md) for a full list of errors and fixes.
+**If the run shows `Replacements made: 0` but you expected an update:** The most likely cause is a `source_prefix` that doesn't exactly match the source line in your `.tf` file. The tool does a literal string match, so even a small difference (a trailing space, a missing `?ref=`) means it won't find the module. Compare your manifest's `source_prefix` character-by-character against the file. A `[SKIP]` line in the logs means the API couldn't resolve a version; an `[ERROR]` line means an API call failed. See [Permissions & Troubleshooting](../how-to/permissions-troubleshooting.md) for a full list of errors and fixes.
 
 ---
 
@@ -146,7 +146,7 @@ The workflow runs automatically each Monday. If a new release of any managed mod
 
 ## Next steps
 
-- **Add more modules:** Expand the `modules` list in your manifest. See [Manifest Schema Reference](MANIFEST_SCHEMA.md) for all available fields, including how to target specific files and how to control whether versions are pinned to a tag or a commit SHA.
+- **Add more modules:** Expand the `modules` list in your manifest. See [Manifest Schema Reference](../reference/manifest-schema.md) for all available fields, including how to target specific files and how to control whether versions are pinned to a tag or a commit SHA.
 - **Change the schedule:** Update the `cron` value — for example `'0 9 * * *'` for daily runs.
-- **Pin to a commit SHA:** Replace `@v1` with a full commit SHA for stricter supply-chain control. See [Consumer Setup](CONSUMER_SETUP.md) for guidance.
-- **Understand the internals:** See [Architecture & Design](ARCHITECTURE.md) for how version discovery, file patching, and the GitHub/Registry split work.
+- **Pin to a commit SHA:** Replace `@v1` with a full commit SHA for stricter supply-chain control. See [Consumer Setup](../how-to/consumer-setup.md) for guidance.
+- **Understand the internals:** See [Architecture & Design](../explanation/architecture.md) for how version discovery, file patching, and the GitHub/Registry split work.

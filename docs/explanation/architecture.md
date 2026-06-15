@@ -278,6 +278,6 @@ Example:
 
 ## See Also
 
-- [Consumer Setup Guide](CONSUMER_SETUP.md) — How to use the tool
-- [Manifest Schema Reference](MANIFEST_SCHEMA.md) — Detailed field documentation
-- [Permissions & Troubleshooting](PERMISSIONS_TROUBLESHOOTING.md) — Debugging and error codes
+- [Consumer Setup Guide](../how-to/consumer-setup.md) — How to use the tool
+- [Manifest Schema Reference](../reference/manifest-schema.md) — Detailed field documentation
+- [Permissions & Troubleshooting](../how-to/permissions-troubleshooting.md) — Debugging and error codes

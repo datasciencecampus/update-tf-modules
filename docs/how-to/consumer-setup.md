@@ -14,7 +14,7 @@ curl -o .github/update-modules-manifest.yml \
   https://raw.githubusercontent.com/datasciencecampus/update-tf-modules/main/examples/update-modules-manifest.example.yml
 ```
 
-Or manually create `.github/update-modules-manifest.yml`. See [MANIFEST_SCHEMA.md](MANIFEST_SCHEMA.md) for detailed field descriptions and validation rules.
+Or manually create `.github/update-modules-manifest.yml`. See [Manifest Schema](../reference/manifest-schema.md) for detailed field descriptions and validation rules.
 
 ### 2. Call the Workflow
 
@@ -26,7 +26,7 @@ permissions:
   pull-requests: write
 ```
 
-Without these permissions, PR creation will fail even if a token is supplied. See [PERMISSIONS_TROUBLESHOOTING.md](PERMISSIONS_TROUBLESHOOTING.md) for full details and token configuration. For production, it is recommended to pin to a full commit SHA.
+Without these permissions, PR creation will fail even if a token is supplied. See [Permissions & Troubleshooting](permissions-troubleshooting.md) for full details and token configuration. For production, it is recommended to pin to a full commit SHA.
 
 ```yaml
 jobs:
@@ -109,10 +109,10 @@ jobs:
 
 ## Troubleshooting
 
-For detailed troubleshooting including permission errors, token configuration, rate limiting, and manifest validation issues, see [PERMISSIONS_TROUBLESHOOTING.md](PERMISSIONS_TROUBLESHOOTING.md).
+For detailed troubleshooting including permission errors, token configuration, rate limiting, and manifest validation issues, see [Permissions & Troubleshooting](permissions-troubleshooting.md).
 
 ## Next Steps
 
-- [Detailed Manifest Schema Reference](MANIFEST_SCHEMA.md) — Field-by-field guide with examples
-- [Architecture & Design](ARCHITECTURE.md) — Why certain decisions were made
-- [Permissions & Troubleshooting](PERMISSIONS_TROUBLESHOOTING.md) — Token, permissions, exit codes, debugging
+- [Detailed Manifest Schema Reference](../reference/manifest-schema.md) — Field-by-field guide with examples
+- [Architecture & Design](../explanation/architecture.md) — Why certain decisions were made
+- [Permissions & Troubleshooting](permissions-troubleshooting.md) — Token, permissions, exit codes, debugging

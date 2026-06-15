@@ -169,7 +169,7 @@ jobs:
    ```bash
    update-tf-modules --manifest-path .github/update-modules-manifest.yml
    ```
-3. Verify manifest syntax and paths (see [MANIFEST_SCHEMA.md](MANIFEST_SCHEMA.md))
+3. Verify manifest syntax and paths (see [Manifest Schema](../reference/manifest-schema.md))
 4. Check that glob patterns match your Terraform files
 
 ### "Module XYZ not found"
@@ -197,7 +197,7 @@ jobs:
 
 This warning is informational and non-blocking. It usually means Terraform modules were discovered in scanned files but are not yet represented in your manifest.
 
-Add modules to the manifest incrementally as needed. For details on why this happens and how discovery works, see [ARCHITECTURE.md](ARCHITECTURE.md).
+Add modules to the manifest incrementally as needed. For details on why this happens and how discovery works, see [Architecture & Design](../explanation/architecture.md).
 
 ## Exit Codes & Debugging
 
@@ -275,6 +275,6 @@ To debug a specific workflow run:
 
 ## See Also
 
-- [Consumer Setup Guide](CONSUMER_SETUP.md) — How to integrate the workflow
-- [Manifest Schema Reference](MANIFEST_SCHEMA.md) — Field documentation
-- [Architecture & Design](ARCHITECTURE.md) — How the tool works internally
+- [Consumer Setup Guide](consumer-setup.md) — How to integrate the workflow
+- [Manifest Schema Reference](../reference/manifest-schema.md) — Field documentation
+- [Architecture & Design](../explanation/architecture.md) — How the tool works internally
