@@ -27,7 +27,7 @@ on:
         description: "Git ref (branch/tag/SHA) for the update-tf-modules repository"
         required: false
         type: string
-        default: add-workflow-wiring
+        default: main
     secrets:
       token:
         description: "GitHub token used for API calls and pull request creation"
@@ -68,7 +68,7 @@ on:
       updater_ref:
         description: "Git ref (branch/tag/SHA) for the update-tf-modules repository"
         required: false
-        default: add-workflow-wiring
+        default: main
         type: string
 concurrency:
   group: update-tf-modules-${{ github.repository }}-${{ inputs.base_branch || github.ref_name }}
