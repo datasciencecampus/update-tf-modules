@@ -153,7 +153,7 @@ This is informational and non-blocking. On first run in a large repository, many
 
 ## Configuration via Environment Variables
 
-The tool reads environment variables for advanced configuration (beyond what the manifest specifies.
+The tool reads environment variables for advanced configuration (beyond what the manifest specifies).
 
 ### `UPDATE_TF_MODULES_REPO_ROOT`
 

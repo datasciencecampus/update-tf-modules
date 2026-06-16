@@ -6,7 +6,7 @@ This guide walks you through integrating `update-tf-modules` into your repositor
 
 ### 1. Create a Manifest File
 
-Copy [examples/update-modules-manifest.example.yml](../examples/update-modules-manifest.example.yml) into your repository:
+Copy [examples/update-modules-manifest.example.yml](../../examples/update-modules-manifest.example.yml) into your repository:
 
 ```bash
 mkdir -p .github
