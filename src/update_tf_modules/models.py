@@ -17,7 +17,7 @@ class BaseModule(BaseModel):
         ]
         if sum(selectors) != 1:
             raise ValueError(
-                f"Module '{self.name}' must define exactly one of 'glob', 'file', or 'files'."
+                f"Module '{self.name}' must define exactly one of 'glob', 'file' or 'files'."
             )
         if self.files is not None and not self.files:
             raise ValueError(f"Module '{self.name}' has 'files' but it is empty.")
