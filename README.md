@@ -4,7 +4,12 @@ A reusable GitHub Actions workflow that automatically opens pull requests to kee
 
 ## Versioning
 
-This project follows SemVer. Use the `@v1` tag to track the latest non-breaking updates; see [Consumer Setup](docs/how-to/consumer-setup.md) for pinning strategies (tag vs. commit SHA).
+This project follows SemVer and publishes two tag types with different semantics:
+
+- `vX.Y.Z` (for example `v1.4.2`) is an immutable release point.
+- `vX` (for example `v1`) is a mutable channel tag that moves to the latest stable `vX.Y.Z` release.
+
+Use `@v1` to track the latest non-breaking updates, or pin to a full commit SHA for maximum reproducibility. See [Consumer Setup](docs/how-to/consumer-setup.md) for pinning strategies.
 
 ## Quick Start
 

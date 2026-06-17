@@ -50,6 +50,18 @@ jobs:
 uses: datasciencecampus/update-tf-modules/.github/workflows/update-tf-modules.yml@v1
 ```
 
+### Tag Semantics
+
+This repository intentionally uses different semantics for major and full version tags:
+
+- `vX` is a mutable channel tag (for example `v1`) and may be moved to newer stable releases in that major line.
+- `vX.Y.Z` is an immutable release tag (for example `v1.2.3`).
+
+Choose based on your needs:
+
+- Use `@vX` for automatic non-breaking updates.
+- Use `@vX.Y.Z` or a full commit SHA for reproducible builds.
+
 ## Example: Minimal Workflow File
 
 Save this as `.github/workflows/update-terraform-modules.yml`:

@@ -64,6 +64,15 @@ Terraform Registry: Available versions [1.0.0, 1.5.0, 2.0.0]
 
 ## Version Discovery & Pinning Strategies
 
+### Release Tag Policy for This Repository
+
+This repository publishes:
+
+- immutable full release tags (`vX.Y.Z`)
+- mutable major channel tags (`vX`), updated to the latest stable release in that major line
+
+This mirrors common GitHub Action versioning practice: convenience tags (`vX`) for non-breaking updates and immutable tags/SHAs for strict reproducibility.
+
 ### GitHub Modules: SHA vs Tag Pinning
 
 **Default: `pin: sha` (most stable)**

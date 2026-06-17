@@ -1,0 +1,36 @@
+name: Move Major Tag
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+
+jobs:
+  move-major-tag:
+    if: ${{ !github.event.release.prerelease && !github.event.release.draft && startsWith(github.event.release.tag_name, 'v') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Move major tag to released version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Skipping non-stable SemVer tag: $TAG"
+            exit 0
+          fi
+
+          MAJOR="$(echo "$TAG" | sed -E 's/^(v[0-9]+)\..*/\1/')"
+
+          git fetch --tags origin
+          git tag -f "$MAJOR" "$TAG"
+          git push origin "refs/tags/$MAJOR" --force
+
+          echo "Moved $MAJOR to $TAG"
