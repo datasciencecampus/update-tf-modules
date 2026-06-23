@@ -1,6 +1,6 @@
 [project]
 name = "update-tf-modules"
-version = "0.1.0"
+version = "0.1.1"
 description = "Add your description here"
 readme = "README.md"
 authors = [
@@ -22,7 +22,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "pytest>=9.1.0",
+    "pytest>=9.1.1",
     "pytest-mock>=3.15.1",
-    "ruff>=0.15.17",
+    "ruff>=0.15.18",
 ]
