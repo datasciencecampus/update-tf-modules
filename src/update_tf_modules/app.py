@@ -10,6 +10,7 @@ from .clients.github_api import (
 from .clients.registry_api import build_registry_session, get_latest_registry_version
 from .config import DEFAULT_MANIFEST_PATH
 from .discovery import warn_on_unmanaged_modules
+from . import log
 from .manifest import load_manifest
 from .models import GitHubModule, RegistryModule
 from .targets import resolve_targets
@@ -23,19 +24,23 @@ def main(manifest_path: Path = DEFAULT_MANIFEST_PATH) -> None:
         manifest_path: Path to the YAML manifest describing managed modules.
     """
     modules = load_manifest(manifest_path)
+    log.info(f"Manifest loaded: {manifest_path} ({len(modules)} module(s))")
+
+    log.info("Running discovery check for unmanaged modules...")
     warn_on_unmanaged_modules(modules)
 
     github_session = build_github_session()
     registry_session = build_registry_session()
     total_updates = 0
 
+    log.info(f"Processing {len(modules)} module(s)...")
     for module in modules:
         if isinstance(module, GitHubModule):
             total_updates += process_github_module(github_session, module)
         else:
             total_updates += process_registry_module(registry_session, module)
 
-    print(f"Completed module update run. Replacements made: {total_updates}")
+    log.info(f"Completed module update run. Replacements made: {total_updates}")
 
 
 def process_github_module(

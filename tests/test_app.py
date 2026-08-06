@@ -44,7 +44,7 @@ def manifest_data(tmp_path: Path) -> tuple[Path, list[Path], Path, list[Path]]:
         '}\n'
     )
 
-    manifest = {
+    manifest: dict[str, list[dict[str, object]]] = {
         "modules": [
             {
                 "name": "test_github_mod_glob",
@@ -114,3 +114,32 @@ def test_app_integration(
     assert "v2.0.0" in single_file.read_text() or "abc123" in single_file.read_text()
     for t in multi_files:
         assert "3.0.0" in t.read_text()
+
+
+def test_app_lifecycle_output(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    manifest_data: tuple[Path, list[Path], Path, list[Path]],
+) -> None:
+    manifest_path, _, _, _ = manifest_data
+    tmp_root = manifest_path.parent
+
+    from update_tf_modules import discovery, targets
+    from update_tf_modules.updaters import github_source, registry_source
+    monkeypatch.setattr(targets, "ROOT", tmp_root)
+    monkeypatch.setattr(discovery, "TERRAFORM_ROOT", tmp_root / "terraform")
+    monkeypatch.setattr(github_source, "ROOT", tmp_root)
+    monkeypatch.setattr(registry_source, "ROOT", tmp_root)
+
+    monkeypatch.setattr("update_tf_modules.app.get_latest_github_tag", lambda s, r, l: "v2.0.0")
+    monkeypatch.setattr("update_tf_modules.app.get_commit_hash_for_tag", lambda s, r, t: "abc123")
+    monkeypatch.setattr("update_tf_modules.app.get_latest_registry_version", lambda s, src: "3.0.0")
+
+    main(manifest_path=manifest_path)
+
+    out = capsys.readouterr().out
+    assert "[INFO] Manifest loaded:" in out
+    assert "3 module(s)" in out
+    assert "[INFO] Running discovery check for unmanaged modules..." in out
+    assert "[INFO] Processing 3 module(s)..." in out
+    assert "[INFO] Completed module update run." in out
