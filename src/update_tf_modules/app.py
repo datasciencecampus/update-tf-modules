@@ -62,22 +62,22 @@ def process_github_module(
     lookup = module.lookup
     pin = module.pin
 
+    log.info(f"Module '{module.name}' (github): querying repo={module.repo} lookup={lookup}")
     tag = get_latest_github_tag(github_session, module.repo, lookup)
     if not tag:
-        print(
-            f"[SKIP] Could not update module '{module.name}' because no GitHub tag or release could be resolved."
-        )
+        log.skip(f"Module '{module.name}': no GitHub tag or release could be resolved.")
         return 0
 
     if pin == "sha":
+        log.info(f"Module '{module.name}' (github): resolving SHA for tag {tag}")
         resolved_ref = get_commit_hash_for_tag(github_session, module.repo, tag)
         if not resolved_ref:
-            print(
-                f"[SKIP] Could not update module '{module.name}' because the commit SHA for tag '{tag}' could not be resolved."
-            )
+            log.skip(f"Module '{module.name}': commit SHA for tag '{tag}' could not be resolved.")
             return 0
+        log.info(f"Module '{module.name}' (github): resolved tag {tag} -> SHA {resolved_ref}")
     elif pin == "tag":
         resolved_ref = tag
+        log.info(f"Module '{module.name}' (github): resolved tag {resolved_ref}")
     else:
         raise ValueError(
             f"Module '{module.name}' has unsupported pin strategy '{pin}'. Use 'sha' or 'tag'."
@@ -86,6 +86,11 @@ def process_github_module(
     updated = 0
     for target in resolve_targets(module):
         updated += update_github_module(target, module.source_prefix, resolved_ref)
+
+    if updated > 0:
+        log.info(f"Module '{module.name}' outcome: updated ({updated} replacement(s))")
+    else:
+        log.info(f"Module '{module.name}' outcome: unchanged (no source entries matched)")
 
     return updated
 
@@ -103,15 +108,20 @@ def process_registry_module(
     Returns:
         Number of version insertions or updates across target files.
     """
+    log.info(f"Module '{module.name}' (registry): querying source={module.source}")
     version = get_latest_registry_version(registry_session, module.source)
     if not version:
-        print(
-            f"[SKIP] Could not update registry module '{module.name}' because no version could be resolved."
-        )
+        log.skip(f"Module '{module.name}': no registry version could be resolved.")
         return 0
 
+    log.info(f"Module '{module.name}' (registry): resolved version {version}")
     updated = 0
     for target in resolve_targets(module):
         updated += update_registry_module(target, module.source, version)
+
+    if updated > 0:
+        log.info(f"Module '{module.name}' outcome: updated ({updated} replacement(s))")
+    else:
+        log.info(f"Module '{module.name}' outcome: unchanged (no source entries matched)")
 
     return updated
