@@ -145,7 +145,8 @@ def test_app_lifecycle_output(
     assert "3 module(s)" in out
     assert "[INFO] Running discovery check for unmanaged modules..." in out
     assert "[INFO] Processing 3 module(s)..." in out
-    assert "[INFO] Completed module update run." in out
+    assert "[INFO] Run summary:" in out
+    assert "modules=3" in out
 
 
 # ---------------------------------------------------------------------------
@@ -205,7 +206,8 @@ def test_process_github_module_logs_updated_outcome(
 
     out = capsys.readouterr().out
     assert "[INFO] Module 'my-mod' outcome: updated (2 replacement(s))" in out
-    assert result == 2
+    assert result.replacements == 2
+    assert result.outcome == "updated"
 
 
 def test_process_github_module_logs_unchanged_outcome(
@@ -222,7 +224,8 @@ def test_process_github_module_logs_unchanged_outcome(
 
     out = capsys.readouterr().out
     assert "[INFO] Module 'my-mod' outcome: unchanged" in out
-    assert result == 0
+    assert result.replacements == 0
+    assert result.outcome == "unchanged"
 
 
 def test_process_github_module_skips_when_no_tag(
@@ -237,7 +240,8 @@ def test_process_github_module_skips_when_no_tag(
 
     out = capsys.readouterr().out
     assert "[SKIP] Module 'my-mod': no GitHub tag or release could be resolved." in out
-    assert result == 0
+    assert result.replacements == 0
+    assert result.outcome == "skipped"
 
 
 def test_process_github_module_skips_when_no_sha(
@@ -260,7 +264,8 @@ def test_process_github_module_skips_when_no_sha(
 
     out = capsys.readouterr().out
     assert "[SKIP] Module 'sha-mod': commit SHA for tag 'v1.0.0' could not be resolved." in out
-    assert result == 0
+    assert result.replacements == 0
+    assert result.outcome == "skipped"
 
 
 def test_process_github_module_sha_pin_logs_resolution(
@@ -321,7 +326,8 @@ def test_process_registry_module_logs_updated_outcome(
 
     out = capsys.readouterr().out
     assert "[INFO] Module 'my-reg-mod' outcome: updated (1 replacement(s))" in out
-    assert result == 1
+    assert result.replacements == 1
+    assert result.outcome == "updated"
 
 
 def test_process_registry_module_logs_unchanged_outcome(
@@ -338,7 +344,8 @@ def test_process_registry_module_logs_unchanged_outcome(
 
     out = capsys.readouterr().out
     assert "[INFO] Module 'my-reg-mod' outcome: unchanged" in out
-    assert result == 0
+    assert result.replacements == 0
+    assert result.outcome == "unchanged"
 
 
 def test_process_registry_module_skips_when_no_version(
@@ -353,4 +360,5 @@ def test_process_registry_module_skips_when_no_version(
 
     out = capsys.readouterr().out
     assert "[SKIP] Module 'my-reg-mod': no registry version could be resolved." in out
-    assert result == 0
+    assert result.replacements == 0
+    assert result.outcome == "skipped"
