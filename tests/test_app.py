@@ -226,6 +226,7 @@ def test_process_github_module_logs_unchanged_outcome(
     assert "[INFO] Module 'my-mod' outcome: unchanged" in out
     assert result.replacements == 0
     assert result.outcome == "unchanged"
+    assert "ref is already v1.0.0" in out
 
 
 def test_process_github_module_skips_when_no_tag(
@@ -291,6 +292,23 @@ def test_process_github_module_sha_pin_logs_resolution(
     assert "resolved tag v1.0.0 -> SHA abc123" in out
 
 
+def test_process_github_module_warns_when_no_targets(
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+        mocker: MockerFixture, 
+        github_module: GitHubModule,
+) -> None:
+    monkeypatch.setattr(app, "get_latest_github_tag", lambda s, r, l: "v1.0.0")
+    monkeypatch.setattr(app, "resolve_targets", lambda m: [])
+
+    result = process_github_module(mocker.MagicMock(), github_module)
+
+    out = capsys.readouterr().out
+    assert "[WARN] Module 'my-mod' outcome: unchanged" in out
+    assert "no target files resolved" in out
+    assert result.outcome == "unchanged"
+
+
 # ---------------------------------------------------------------------------
 # process_registry_module – per-module output
 # ---------------------------------------------------------------------------
@@ -346,6 +364,7 @@ def test_process_registry_module_logs_unchanged_outcome(
     assert "[INFO] Module 'my-reg-mod' outcome: unchanged" in out
     assert result.replacements == 0
     assert result.outcome == "unchanged"
+    assert "version is already 2.0.0" in out
 
 
 def test_process_registry_module_skips_when_no_version(
@@ -362,3 +381,20 @@ def test_process_registry_module_skips_when_no_version(
     assert "[SKIP] Module 'my-reg-mod': no registry version could be resolved." in out
     assert result.replacements == 0
     assert result.outcome == "skipped"
+
+
+def test_process_registry_module_warns_when_no_targets(
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+        mocker: MockerFixture, 
+        registry_module: RegistryModule,
+) -> None:
+    monkeypatch.setattr(app, "get_latest_registry_version", lambda s, src: "2.0.0")
+    monkeypatch.setattr(app, "resolve_targets", lambda m: [])
+
+    result = process_registry_module(mocker.MagicMock(), registry_module)
+
+    out = capsys.readouterr().out
+    assert "[WARN] Module 'my-reg-mod' outcome: unchanged" in out
+    assert "no target files resolved" in out
+    assert result.outcome == "unchanged"

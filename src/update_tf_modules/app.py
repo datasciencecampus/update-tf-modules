@@ -100,14 +100,25 @@ def process_github_module(
         )
 
     updated = 0
-    for target in resolve_targets(module):
+    targets = resolve_targets(module)
+    if not targets: 
+        log.warn(
+            f"Module '{module.name}' outcome: unchanged - no target files resolved "
+            f"(check glob/file/files selector in manifest)"
+        )
+        return ModuleOutcome(outcome="unchanged")
+    
+    for target in targets:
         updated += update_github_module(target, module.source_prefix, resolved_ref)
 
     if updated > 0:
         log.info(f"Module '{module.name}' outcome: updated ({updated} replacement(s))")
         return ModuleOutcome(outcome="updated", replacements=updated)
     else:
-        log.info(f"Module '{module.name}' outcome: unchanged (no source entries matched)")
+        log.info(
+            f"Module '{module.name}' outcome: unchanged - ref is already {resolved_ref} "
+            f"or source_prefix does not match any entries in target file(s)"
+            )
         return ModuleOutcome(outcome="unchanged")
 
 
@@ -132,12 +143,22 @@ def process_registry_module(
 
     log.info(f"Module '{module.name}' (registry): resolved version {version}")
     updated = 0
-    for target in resolve_targets(module):
+    targets = resolve_targets(module)
+    if not targets:
+        log.warn(
+            f"Module '{module.name}' outcome: unchanged - no target files resolved "
+            f"(check glob/file/files selector in manifest)"
+        )
+        return ModuleOutcome(outcome="unchanged")
+    for target in targets:
         updated += update_registry_module(target, module.source, version)
 
     if updated > 0:
         log.info(f"Module '{module.name}' outcome: updated ({updated} replacement(s))")
         return ModuleOutcome(outcome="updated", replacements=updated)
     else:
-        log.info(f"Module '{module.name}' outcome: unchanged (no source entries matched)")
+        log.info(
+            f"Module '{module.name}' outcome: unchanged - version is already {version} "
+            f"or source does not match any entries in target file(s)"
+                 )
         return ModuleOutcome(outcome="unchanged")
