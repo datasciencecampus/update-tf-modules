@@ -42,6 +42,13 @@ def tmp_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
                 'source = "git::https://github.com/org/repo.git?ref=newref"\n'
             ),
             2,
+        ), # Already latest ref
+                (
+            'source = "git::https://github.com/org/repo.git?ref=newref"\n',
+            'git::https://github.com/org/repo.git?ref=',
+            'newref',
+            'source = "git::https://github.com/org/repo.git?ref=newref"\n',
+            0,
         ),
     ]
 )

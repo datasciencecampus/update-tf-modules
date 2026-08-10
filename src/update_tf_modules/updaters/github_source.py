@@ -23,15 +23,21 @@ def update_github_module(
     """
     regex = rf'(^\s*source\s*=\s*"{re.escape(source_prefix)})([^"]+)(")'
     content = file_path.read_text(encoding="utf-8")
-    new_content, count = re.subn(
-        regex, 
-        lambda match: f"{match.group(1)}{new_ref}{match.group(3)}", 
-        content, 
-        flags=re.MULTILINE,
-        )
+    replacements = 0
 
-    if count > 0 and new_content != content:
+    def replace(match: re.Match[str]) -> str:
+        nonlocal replacements
+        current_ref = match.group(2)
+        if current_ref == new_ref:
+            return match.group(0)
+
+        replacements += 1
+        return f"{match.group(1)}{new_ref}{match.group(3)}"
+
+    new_content = re.sub(regex, replace, content, flags=re.MULTILINE)
+
+    if replacements > 0:
         file_path.write_text(new_content, encoding="utf-8")
         print(f"Updated GitHub module in {file_path.relative_to(ROOT)} to {new_ref}")
 
-    return count
+    return replacements
