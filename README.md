@@ -6,16 +6,16 @@ A reusable GitHub Actions workflow that automatically opens pull requests to kee
 
 This project follows SemVer and publishes two tag types with different semantics:
 
-- `vX.Y.Z` (for example `v1.4.2`) is an immutable release point.
-- `vX` (for example `v1`) is a mutable channel tag that moves to the latest stable `vX.Y.Z` release.
+- `vX.Y.Z` (for example `v0.1.1`) is an immutable release point.
+- `vX` (for example `v0`) is a mutable channel tag that moves to the latest stable `vX.Y.Z` release.
 
-Use `@v1` to track the latest non-breaking updates, or pin to a full commit SHA for maximum reproducibility. See [Consumer Setup](docs/how-to/consumer-setup.md) for pinning strategies.
+Use `@v0` to track the latest non-breaking updates in the current major line, or pin to a full commit SHA for maximum reproducibility. See [Consumer Setup](docs/how-to/consumer-setup.md) for pinning strategies.
 
 ## Quick Start
 
 1. **Create a manifest** at `.github/update-modules-manifest.yml` listing the modules to manage.
 2. **Declare permissions** — your workflow job needs `contents: write` and `pull-requests: write`.
-3. **Call the workflow** using the `@v1` tag or a pinned commit SHA.
+3. **Call the workflow** using the `@v0` tag or a pinned commit SHA.
 
 ```yaml
 jobs:
@@ -23,7 +23,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: datasciencecampus/update-tf-modules/.github/workflows/update-tf-modules.yml@v1
+    uses: datasciencecampus/update-tf-modules/.github/workflows/update-tf-modules.yml@v0
     with:
       manifest_path: .github/update-modules-manifest.yml
       terraform_root: terraform

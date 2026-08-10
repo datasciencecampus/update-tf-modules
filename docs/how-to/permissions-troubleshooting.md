@@ -110,7 +110,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: datasciencecampus/update-tf-modules/.github/workflows/update-tf-modules.yml@v1
+    uses: datasciencecampus/update-tf-modules/.github/workflows/update-tf-modules.yml@v0
 ```
 
 **Verify:** Check that `permissions` is at the job level (not workflow level).

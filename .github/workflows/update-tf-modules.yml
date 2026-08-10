@@ -27,7 +27,7 @@ on:
         description: "Git ref (branch/tag/SHA) for the update-tf-modules repository"
         required: false
         type: string
-        default: v1
+        default: v0
     secrets:
       token:
         description: "GitHub token used for API calls and pull request creation"
@@ -68,7 +68,7 @@ on:
       updater_ref:
         description: "Git ref (branch/tag/SHA) for the update-tf-modules repository"
         required: false
-        default: v1
+        default: v0
         type: string
 concurrency:
   group: update-tf-modules-${{ github.repository }}-${{ inputs.base_branch || github.ref_name }}
@@ -88,6 +88,34 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Validate updater_ref exists
+        env:
+          UPDATER_REPO: datasciencecampus/update-tf-modules
+          UPDATER_REF: ${{ inputs.updater_ref }}
+        run: |
+          set -euo pipefail
+
+          # Accept raw commit SHAs; tag/branch validation is only for named refs.
+          if [[ "$UPDATER_REF" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
+            echo "updater_ref appears to be a commit SHA: $UPDATER_REF"
+            exit 0
+          fi
+
+          REMOTE_URL="https://github.com/${UPDATER_REPO}.git"
+          if git ls-remote --exit-code --heads --tags "$REMOTE_URL" "$UPDATER_REF" >/dev/null; then
+            echo "Validated updater_ref '$UPDATER_REF' in $UPDATER_REPO"
+            exit 0
+          fi
+
+          echo "Invalid updater_ref '$UPDATER_REF' for repository '$UPDATER_REPO'."
+          echo "No matching branch or tag was found."
+          echo ""
+          echo "How to fix:"
+          echo "- Set 'with.updater_ref' to an existing branch, tag, or commit SHA"
+          echo "- Use 'v0' to track the current major release channel"
+          echo "- Or pin to an immutable release tag like 'v0.1.1'"
+          exit 1
 
       - name: Checkout updater package source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
