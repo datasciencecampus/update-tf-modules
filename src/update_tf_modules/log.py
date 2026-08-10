@@ -1,21 +1,29 @@
-"""Temporary thin output wrapper for structured run progress messages."""
+"""Structured run progress logging."""
+import logging 
+import os 
+import sys
 
+_LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+
+logging.basicConfig(
+    stream=sys.stdout,
+    level=getattr(logging, _LOG_LEVEL, logging.INFO),
+    format="[%(levelname)s] %(message)s",
+)
+
+_logger = logging.getLogger("update_tf_modules")
 
 def info(message: str) -> None:
-    """Emit an informational progress line."""
-    print(f"[INFO] {message}")
+    _logger.info(message)
 
 
 def warn(message: str) -> None:
-    """Emit a non-blocking warning line."""
-    print(f"[WARN] {message}")
+    _logger.warning(message)
 
 
 def skip(message: str) -> None:
-    """Emit a skip notice for a module bypassed intentionally."""
-    print(f"[SKIP] {message}")
+    _logger.info("[SKIP] %s", message)
 
 
 def error(message: str) -> None:
-    """Emit an error line for a failure that halted processing of one module."""
-    print(f"[ERROR] {message}")
+    _logger.error(message)
