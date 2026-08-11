@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import logging
 from pathlib import Path
 
 import requests
@@ -11,12 +12,14 @@ from .clients.github_api import (
 from .clients.registry_api import build_registry_session, get_latest_registry_version
 from .config import DEFAULT_MANIFEST_PATH
 from .discovery import warn_on_unmanaged_modules
-from . import log
 from .manifest import load_manifest
 from .models import GitHubModule, RegistryModule
 from .targets import resolve_targets
 from .updaters.github_source import update_github_module
 from .updaters.registry_source import update_registry_module
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -31,16 +34,16 @@ def main(manifest_path: Path = DEFAULT_MANIFEST_PATH) -> None:
         manifest_path: Path to the YAML manifest describing managed modules.
     """
     modules = load_manifest(manifest_path)
-    log.info(f"Manifest loaded: {manifest_path} ({len(modules)} module(s))")
+    logger.info(f"Manifest loaded: {manifest_path} ({len(modules)} module(s))")
 
-    log.info("Running discovery check for unmanaged modules...")
+    logger.info("Running discovery check for unmanaged modules...")
     warn_on_unmanaged_modules(modules)
 
     github_session = build_github_session()
     registry_session = build_registry_session()
 
     outcomes: list[ModuleOutcome] = []
-    log.info(f"Processing {(n_modules := len(modules))} module(s)...")
+    logger.info(f"Processing {(n_modules := len(modules))} module(s)...")
     for module in modules:
         if isinstance(module, GitHubModule):
             outcomes.append(process_github_module(github_session, module))
@@ -52,7 +55,7 @@ def main(manifest_path: Path = DEFAULT_MANIFEST_PATH) -> None:
     n_unchanged = sum(1 for o in outcomes if o.outcome == "unchanged")
     n_skipped = sum(1 for o in outcomes if o.outcome == "skipped")
 
-    log.info(
+    logger.info(
         f"Run summary: modules={n_modules}, updated={n_updated}, "
         f"unchanged={n_unchanged}, skipped={n_skipped} "
         f"replacements={total_replacements}"
@@ -78,22 +81,26 @@ def process_github_module(
     lookup = module.lookup
     pin = module.pin
 
-    log.info(f"Module '{module.name}' (github): querying repo={module.repo} lookup={lookup}")
+    logger.info(f"Module '{module.name}' (github): querying repo={module.repo} lookup={lookup}")
     tag = get_latest_github_tag(github_session, module.repo, lookup)
     if not tag:
-        log.skip(f"Module '{module.name}': no GitHub tag or release could be resolved.")
+        logger.info(
+            f"Module '{module.name}' outcome: skipped - no GitHub tag or release could be resolved"
+        )
         return ModuleOutcome(outcome="skipped")
 
     if pin == "sha":
-        log.info(f"Module '{module.name}' (github): resolving SHA for tag {tag}")
+        logger.info(f"Module '{module.name}' (github): resolving SHA for tag {tag}")
         resolved_ref = get_commit_hash_for_tag(github_session, module.repo, tag)
         if not resolved_ref:
-            log.skip(f"Module '{module.name}': commit SHA for tag '{tag}' could not be resolved.")
+            logger.info(
+                f"Module '{module.name}' outcome: skipped - commit SHA for tag '{tag}' could not be resolved"
+            )
             return ModuleOutcome(outcome="skipped")
-        log.info(f"Module '{module.name}' (github): resolved tag {tag} -> SHA {resolved_ref}")
+        logger.info(f"Module '{module.name}' (github): resolved tag {tag} -> SHA {resolved_ref}")
     elif pin == "tag":
         resolved_ref = tag
-        log.info(f"Module '{module.name}' (github): resolved tag {resolved_ref}")
+        logger.info(f"Module '{module.name}' (github): resolved tag {resolved_ref}")
     else:
         raise ValueError(
             f"Module '{module.name}' has unsupported pin strategy '{pin}'. Use 'sha' or 'tag'."
@@ -102,7 +109,7 @@ def process_github_module(
     updated = 0
     targets = resolve_targets(module)
     if not targets: 
-        log.warn(
+        logger.warning(
             f"Module '{module.name}' outcome: unchanged - no target files resolved "
             f"(check glob/file/files selector in manifest)"
         )
@@ -112,10 +119,10 @@ def process_github_module(
         updated += update_github_module(target, module.source_prefix, resolved_ref)
 
     if updated > 0:
-        log.info(f"Module '{module.name}' outcome: updated ({updated} replacement(s))")
+        logger.info(f"Module '{module.name}' outcome: updated ({updated} replacement(s))")
         return ModuleOutcome(outcome="updated", replacements=updated)
     else:
-        log.info(
+        logger.info(
             f"Module '{module.name}' outcome: unchanged - ref is already {resolved_ref} "
             f"or source_prefix does not match any entries in target file(s)"
             )
@@ -135,17 +142,19 @@ def process_registry_module(
     Returns:
         Number of version insertions or updates across target files.
     """
-    log.info(f"Module '{module.name}' (registry): querying source={module.source}")
+    logger.info(f"Module '{module.name}' (registry): querying source={module.source}")
     version = get_latest_registry_version(registry_session, module.source)
     if not version:
-        log.skip(f"Module '{module.name}': no registry version could be resolved.")
+        logger.info(
+            f"Module '{module.name}' outcome: skipped - no registry version could be resolved"
+        )
         return ModuleOutcome(outcome="skipped")
 
-    log.info(f"Module '{module.name}' (registry): resolved version {version}")
+    logger.info(f"Module '{module.name}' (registry): resolved version {version}")
     updated = 0
     targets = resolve_targets(module)
     if not targets:
-        log.warn(
+        logger.warning(
             f"Module '{module.name}' outcome: unchanged - no target files resolved "
             f"(check glob/file/files selector in manifest)"
         )
@@ -154,10 +163,10 @@ def process_registry_module(
         updated += update_registry_module(target, module.source, version)
 
     if updated > 0:
-        log.info(f"Module '{module.name}' outcome: updated ({updated} replacement(s))")
+        logger.info(f"Module '{module.name}' outcome: updated ({updated} replacement(s))")
         return ModuleOutcome(outcome="updated", replacements=updated)
     else:
-        log.info(
+        logger.info(
             f"Module '{module.name}' outcome: unchanged - version is already {version} "
             f"or source does not match any entries in target file(s)"
                  )

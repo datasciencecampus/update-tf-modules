@@ -242,7 +242,7 @@ def test_process_github_module_skips_when_no_tag(
     with caplog.at_level(logging.INFO):
         result = process_github_module(mocker.MagicMock(), github_module)
 
-    assert "[SKIP] Module 'my-mod': no GitHub tag or release could be resolved." in caplog.text
+    assert "Module 'my-mod' outcome: skipped - no GitHub tag or release could be resolved" in caplog.text
     assert result.replacements == 0
     assert result.outcome == "skipped"
 
@@ -266,7 +266,7 @@ def test_process_github_module_skips_when_no_sha(
     with caplog.at_level(logging.INFO):
         result = process_github_module(mocker.MagicMock(), module)
 
-    assert "[SKIP] Module 'sha-mod': commit SHA for tag 'v1.0.0' could not be resolved." in caplog.text
+    assert "Module 'sha-mod' outcome: skipped - commit SHA for tag 'v1.0.0' could not be resolved" in caplog.text
     assert result.replacements == 0
     assert result.outcome == "skipped"
 
@@ -380,7 +380,7 @@ def test_process_registry_module_skips_when_no_version(
     with caplog.at_level(logging.INFO):
         result = process_registry_module(mocker.MagicMock(), registry_module)
 
-    assert "[SKIP] Module 'my-reg-mod': no registry version could be resolved." in caplog.text
+    assert "Module 'my-reg-mod' outcome: skipped - no registry version could be resolved" in caplog.text
     assert result.replacements == 0
     assert result.outcome == "skipped"
 
