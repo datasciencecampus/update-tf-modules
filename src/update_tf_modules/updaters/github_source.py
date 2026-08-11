@@ -2,6 +2,8 @@ from pathlib import Path
 import re
 
 from ..config import ROOT
+import logging
+logger = logging.getLogger(__name__)
 
 def update_github_module(
     file_path: Path,
@@ -32,6 +34,6 @@ def update_github_module(
 
     if count > 0 and new_content != content:
         file_path.write_text(new_content, encoding="utf-8")
-        print(f"Updated GitHub module in {file_path.relative_to(ROOT)} to {new_ref}")
+        logger.info(f"Updated GitHub module in {file_path.relative_to(ROOT)} to {new_ref}")
 
     return count

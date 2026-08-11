@@ -57,10 +57,9 @@ def test_managed_source_keys():
     assert "git::https://github.com/org/repo.git?ref=" in result
     assert "registry.terraform.io/org/module/aws" in result
 
-def test_warn_on_unmanaged_modules(monkeypatch: MonkeyPatch, capsys: pytest.CaptureFixture[str]):
+def test_warn_on_unmanaged_modules(monkeypatch, caplog):
     monkeypatch.setattr(discovery, "discover_module_sources", lambda: {"source1", "source2"})
     monkeypatch.setattr(discovery, "managed_source_keys", lambda _: {"source1"})
     warn_on_unmanaged_modules([])
-    captured = capsys.readouterr()
-    assert "[WARN] Terraform modules were found in the repo but are not represented in the manifest:" in captured.out
-    assert "  - source2" in captured.out
+    assert "Terraform modules were found in the repo but are not represented in the manifest:" in caplog.text
+    assert "  - source2" in caplog.text

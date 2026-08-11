@@ -2,6 +2,8 @@ from pathlib import Path
 import re
 
 from ..config import ROOT
+import logging
+logger = logging.getLogger(__name__)
 
 def update_registry_module(
     file_path: Path,
@@ -89,7 +91,7 @@ def update_registry_module(
     old_content = file_path.read_text(encoding="utf-8")
     if new_content != old_content:
         file_path.write_text(new_content, encoding="utf-8")
-        print(
+        logger.info(
             f"Updated registry module '{source}' in {file_path.relative_to(ROOT)} to {new_version}"
         )
 
