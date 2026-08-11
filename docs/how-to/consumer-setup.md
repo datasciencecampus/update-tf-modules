@@ -34,7 +34,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: datasciencecampus/update-tf-modules/.github/workflows/update-tf-modules.yml@<full-commit-sha> # v1.2.3
+    uses: datasciencecampus/update-tf-modules/.github/workflows/update-tf-modules.yml@<full-commit-sha> # v0.1.1
     with:
       manifest_path: .github/update-modules-manifest.yml
       terraform_root: terraform
@@ -44,18 +44,18 @@ jobs:
       token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-**For convenience:** Track the v1 tag (receives non-breaking updates automatically):
+**For convenience:** Track the v0 tag (receives non-breaking updates automatically within major 0):
 
 ```yaml
-uses: datasciencecampus/update-tf-modules/.github/workflows/update-tf-modules.yml@v1
+uses: datasciencecampus/update-tf-modules/.github/workflows/update-tf-modules.yml@v0
 ```
 
 ### Tag Semantics
 
 This repository intentionally uses different semantics for major and full version tags:
 
-- `vX` is a mutable channel tag (for example `v1`) and may be moved to newer stable releases in that major line.
-- `vX.Y.Z` is an immutable release tag (for example `v1.2.3`).
+- `vX` is a mutable channel tag (for example `v0`) and may be moved to newer stable releases in that major line.
+- `vX.Y.Z` is an immutable release tag (for example `v0.1.1`).
 
 Choose based on your needs:
 
@@ -79,7 +79,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: datasciencecampus/update-tf-modules/.github/workflows/update-tf-modules.yml@v1
+    uses: datasciencecampus/update-tf-modules/.github/workflows/update-tf-modules.yml@v0
     with:
       manifest_path: .github/update-modules-manifest.yml
       terraform_root: terraform
@@ -109,7 +109,7 @@ jobs:
 | `terraform_root` | string | `terraform` | Root folder containing Terraform files |
 | `base_branch` | string | `main` | PR base branch |
 | `create_pr` | boolean | `true` | Whether to open a PR (or just commit) |
-| `updater_ref` | string | `v1` | Git ref (branch/tag/SHA) for the update-tf-modules repository |
+| `updater_ref` | string | `v0` | Git ref (branch/tag/SHA) for the update-tf-modules repository |
 
 ### Outputs
 

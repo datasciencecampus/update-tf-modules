@@ -93,7 +93,7 @@ jobs:
     permissions:
       contents: write        # Required to create branches and commits
       pull-requests: write   # Required to open pull requests
-    uses: datasciencecampus/update-tf-modules/.github/workflows/update-tf-modules.yml@v1
+    uses: datasciencecampus/update-tf-modules/.github/workflows/update-tf-modules.yml@v0
     with:
       manifest_path: .github/update-modules-manifest.yml
       terraform_root: terraform
@@ -148,5 +148,5 @@ The workflow runs automatically each Monday. If a new release of any managed mod
 
 - **Add more modules:** Expand the `modules` list in your manifest. See [Manifest Schema Reference](../reference/manifest-schema.md) for all available fields, including how to target specific files and how to control whether versions are pinned to a tag or a commit SHA.
 - **Change the schedule:** Update the `cron` value — for example `'0 9 * * *'` for daily runs.
-- **Pin to a commit SHA:** Replace `@v1` with a full commit SHA for stricter supply-chain control. See [Consumer Setup](../how-to/consumer-setup.md) for guidance.
+- **Pin to a commit SHA:** Replace `@v0` with a full commit SHA for stricter supply-chain control. See [Consumer Setup](../how-to/consumer-setup.md) for guidance.
 - **Understand the internals:** See [Architecture & Design](../explanation/architecture.md) for how version discovery, file patching, and the GitHub/Registry split work.
