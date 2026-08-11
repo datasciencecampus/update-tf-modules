@@ -88,3 +88,35 @@ output "someoutput" {
     assert "# Some comment" in text
     assert 'output "someoutput"' in text
     assert 'version = "2.0.0"' in text
+
+
+def test_does_not_count_existing_latest_version(tmp_root: Path):
+    content = '''
+module "testmod" {
+  source = "myregistry/module"
+  version = "2.0.0"
+}
+'''
+    file = tmp_root / "file.tf"
+    file.write_text(content)
+    count = update_registry_module(file, "myregistry/module", "2.0.0")
+    assert count == 0
+    assert file.read_text() == content
+
+
+def test_counts_only_actual_registry_changes(tmp_root: Path):
+    content = '''
+module "already_latest" {
+  source = "myregistry/module"
+  version = "2.0.0"
+}
+module "needs_update" {
+  source = "myregistry/module"
+  version = "1.0.0"
+}
+'''
+    file = tmp_root / "file.tf"
+    file.write_text(content)
+    count = update_registry_module(file, "myregistry/module", "2.0.0")
+    assert count == 1
+    assert file.read_text().count('version = "2.0.0"') == 2

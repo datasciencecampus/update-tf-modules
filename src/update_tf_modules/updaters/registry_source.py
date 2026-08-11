@@ -57,9 +57,10 @@ def update_registry_module(
             version_match = version_pattern.match(line)
             if matching_source and version_match:
                 indent = version_match.group("indent")
-                updated_lines.append(f'{indent}version = "{new_version}"')
+                updated_lines.append((new_line := f'{indent}version = "{new_version}"'))
                 version_updated = True
-                inserted_or_updated += 1
+                if new_line != line:
+                    inserted_or_updated += 1
                 brace_depth += line.count("{") - line.count("}")
                 continue
 

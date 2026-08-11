@@ -1,8 +1,14 @@
-import yaml
+import logging
 from pathlib import Path
-import pytest
+import yaml
 
-from update_tf_modules.app import main
+import pytest
+from pytest_mock import MockerFixture
+
+from update_tf_modules import app, discovery, targets
+from update_tf_modules.app import main, process_github_module, process_registry_module
+from update_tf_modules.models import GitHubModule, RegistryModule
+from update_tf_modules.updaters import github_source, registry_source
 
 @pytest.fixture
 def manifest_data(tmp_path: Path) -> tuple[Path, list[Path], Path, list[Path]]:
@@ -44,7 +50,7 @@ def manifest_data(tmp_path: Path) -> tuple[Path, list[Path], Path, list[Path]]:
         '}\n'
     )
 
-    manifest = {
+    manifest: dict[str, list[dict[str, object]]] = {
         "modules": [
             {
                 "name": "test_github_mod_glob",
@@ -84,8 +90,6 @@ def test_app_integration(
     manifest_path, glob_targets, single_file, multi_files = manifest_data
 
     tmp_root = manifest_path.parent
-    from update_tf_modules import discovery, targets
-    from update_tf_modules.updaters import github_source, registry_source
     monkeypatch.setattr(targets, "ROOT", tmp_root)
     monkeypatch.setattr(discovery, "TERRAFORM_ROOT", tmp_root / "terraform")
     monkeypatch.setattr(github_source, "ROOT", tmp_root)
@@ -114,3 +118,282 @@ def test_app_integration(
     assert "v2.0.0" in single_file.read_text() or "abc123" in single_file.read_text()
     for t in multi_files:
         assert "3.0.0" in t.read_text()
+
+
+def test_app_lifecycle_output(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    manifest_data: tuple[Path, list[Path], Path, list[Path]],
+) -> None:
+    manifest_path, _, _, _ = manifest_data
+    tmp_root = manifest_path.parent
+
+    monkeypatch.setattr(targets, "ROOT", tmp_root)
+    monkeypatch.setattr(discovery, "TERRAFORM_ROOT", tmp_root / "terraform")
+    monkeypatch.setattr(github_source, "ROOT", tmp_root)
+    monkeypatch.setattr(registry_source, "ROOT", tmp_root)
+
+    monkeypatch.setattr("update_tf_modules.app.get_latest_github_tag", lambda s, r, l: "v2.0.0")
+    monkeypatch.setattr("update_tf_modules.app.get_commit_hash_for_tag", lambda s, r, t: "abc123")
+    monkeypatch.setattr("update_tf_modules.app.get_latest_registry_version", lambda s, src: "3.0.0")
+
+    with caplog.at_level(logging.INFO):
+        main(manifest_path=manifest_path)
+
+    assert "Manifest loaded:" in caplog.text
+    assert "3 module(s)" in caplog.text
+    assert "Running discovery check for unmanaged modules" in caplog.text
+    assert "Processing 3 module(s)" in caplog.text
+    assert "Run summary:" in caplog.text
+    assert "modules=3" in caplog.text
+
+
+# ---------------------------------------------------------------------------
+# process_github_module – per-module output
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def github_module() -> GitHubModule:
+    return GitHubModule(
+        name="my-mod",
+        type="github",
+        repo="org/repo",
+        source_prefix="git::https://github.com/org/repo.git?ref=",
+        lookup="release",
+        pin="tag",
+        glob="*.tf",
+    )
+
+
+@pytest.fixture
+def registry_module() -> RegistryModule:
+    return RegistryModule(
+        name="my-reg-mod",
+        type="registry",
+        source="ns/mod/aws",
+        glob="*.tf",
+    )
+
+
+def test_process_github_module_logs_start_and_resolution(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    mocker: MockerFixture,
+    github_module: GitHubModule,
+) -> None:
+    monkeypatch.setattr(app, "get_latest_github_tag", lambda s, r, l: "v1.0.0")
+    monkeypatch.setattr(app, "resolve_targets", lambda m: [])
+
+    with caplog.at_level(logging.INFO):
+        process_github_module(mocker.MagicMock(), github_module)
+
+    assert "Module 'my-mod' (github): querying repo=org/repo" in caplog.text
+    assert "Module 'my-mod' (github): resolved tag v1.0.0" in caplog.text
+
+
+def test_process_github_module_logs_updated_outcome(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    mocker: MockerFixture,
+    github_module: GitHubModule,
+) -> None:
+    monkeypatch.setattr(app, "get_latest_github_tag", lambda s, r, l: "v1.0.0")
+    monkeypatch.setattr(app, "resolve_targets", lambda m: [mocker.MagicMock()])
+    monkeypatch.setattr(app, "update_github_module", lambda f, sp, ref: 2)
+
+    with caplog.at_level(logging.INFO):
+        result = process_github_module(mocker.MagicMock(), github_module)
+
+    assert "Module 'my-mod' outcome: updated (2 replacement(s))" in caplog.text
+    assert result.replacements == 2
+    assert result.outcome == "updated"
+
+
+def test_process_github_module_logs_unchanged_outcome(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    mocker: MockerFixture,
+    github_module: GitHubModule,
+) -> None:
+    monkeypatch.setattr(app, "get_latest_github_tag", lambda s, r, l: "v1.0.0")
+    monkeypatch.setattr(app, "resolve_targets", lambda m: [mocker.MagicMock()])
+    monkeypatch.setattr(app, "update_github_module", lambda f, sp, ref: 0)
+
+    with caplog.at_level(logging.INFO):
+        result = process_github_module(mocker.MagicMock(), github_module)
+
+    assert "Module 'my-mod' outcome: unchanged" in caplog.text
+    assert result.replacements == 0
+    assert result.outcome == "unchanged"
+    assert "ref is already v1.0.0" in caplog.text
+
+
+def test_process_github_module_skips_when_no_tag(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    mocker: MockerFixture,
+    github_module: GitHubModule,
+) -> None:
+    monkeypatch.setattr(app, "get_latest_github_tag", lambda s, r, l: None)
+
+    with caplog.at_level(logging.INFO):
+        result = process_github_module(mocker.MagicMock(), github_module)
+
+    assert "Module 'my-mod' outcome: skipped - no GitHub tag or release could be resolved" in caplog.text
+    assert result.replacements == 0
+    assert result.outcome == "skipped"
+
+
+def test_process_github_module_skips_when_no_sha(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    mocker: MockerFixture,
+) -> None:
+    module = GitHubModule(
+        name="sha-mod",
+        type="github",
+        repo="org/repo",
+        source_prefix="git::https://github.com/org/repo.git?ref=",
+        pin="sha",
+        glob="*.tf",
+    )
+    monkeypatch.setattr(app, "get_latest_github_tag", lambda s, r, l: "v1.0.0")
+    monkeypatch.setattr(app, "get_commit_hash_for_tag", lambda s, r, t: None)
+
+    with caplog.at_level(logging.INFO):
+        result = process_github_module(mocker.MagicMock(), module)
+
+    assert "Module 'sha-mod' outcome: skipped - commit SHA for tag 'v1.0.0' could not be resolved" in caplog.text
+    assert result.replacements == 0
+    assert result.outcome == "skipped"
+
+
+def test_process_github_module_sha_pin_logs_resolution(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    mocker: MockerFixture,
+) -> None:
+    module = GitHubModule(
+        name="sha-mod",
+        type="github",
+        repo="org/repo",
+        source_prefix="git::https://github.com/org/repo.git?ref=",
+        pin="sha",
+        glob="*.tf",
+    )
+    monkeypatch.setattr(app, "get_latest_github_tag", lambda s, r, l: "v1.0.0")
+    monkeypatch.setattr(app, "get_commit_hash_for_tag", lambda s, r, t: "abc123")
+    monkeypatch.setattr(app, "resolve_targets", lambda m: [])
+
+    with caplog.at_level(logging.INFO):
+        process_github_module(mocker.MagicMock(), module)
+
+    assert "resolved tag v1.0.0 -> SHA abc123" in caplog.text
+
+
+def test_process_github_module_warns_when_no_targets(
+        monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+        mocker: MockerFixture,
+        github_module: GitHubModule,
+) -> None:
+    monkeypatch.setattr(app, "get_latest_github_tag", lambda s, r, l: "v1.0.0")
+    monkeypatch.setattr(app, "resolve_targets", lambda m: [])
+
+    with caplog.at_level(logging.INFO):
+        result = process_github_module(mocker.MagicMock(), github_module)
+
+    assert "Module 'my-mod' outcome: unchanged" in caplog.text
+    assert "no target files resolved" in caplog.text
+    assert result.outcome == "unchanged"
+
+
+# ---------------------------------------------------------------------------
+# process_registry_module – per-module output
+# ---------------------------------------------------------------------------
+
+
+def test_process_registry_module_logs_start_and_resolution(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    mocker: MockerFixture,
+    registry_module: RegistryModule,
+) -> None:
+    monkeypatch.setattr(app, "get_latest_registry_version", lambda s, src: "2.0.0")
+    monkeypatch.setattr(app, "resolve_targets", lambda m: [])
+
+    with caplog.at_level(logging.INFO):
+        process_registry_module(mocker.MagicMock(), registry_module)
+
+    assert "Module 'my-reg-mod' (registry): querying source=ns/mod/aws" in caplog.text
+    assert "Module 'my-reg-mod' (registry): resolved version 2.0.0" in caplog.text
+
+
+def test_process_registry_module_logs_updated_outcome(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    mocker: MockerFixture,
+    registry_module: RegistryModule,
+) -> None:
+    monkeypatch.setattr(app, "get_latest_registry_version", lambda s, src: "2.0.0")
+    monkeypatch.setattr(app, "resolve_targets", lambda m: [mocker.MagicMock()])
+    monkeypatch.setattr(app, "update_registry_module", lambda f, src, ver: 1)
+
+    with caplog.at_level(logging.INFO):
+        result = process_registry_module(mocker.MagicMock(), registry_module)
+
+    assert "Module 'my-reg-mod' outcome: updated (1 replacement(s))" in caplog.text
+    assert result.replacements == 1
+    assert result.outcome == "updated"
+
+
+def test_process_registry_module_logs_unchanged_outcome(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    mocker: MockerFixture,
+    registry_module: RegistryModule,
+) -> None:
+    monkeypatch.setattr(app, "get_latest_registry_version", lambda s, src: "2.0.0")
+    monkeypatch.setattr(app, "resolve_targets", lambda m: [mocker.MagicMock()])
+    monkeypatch.setattr(app, "update_registry_module", lambda f, src, ver: 0)
+
+    with caplog.at_level(logging.INFO):
+        result = process_registry_module(mocker.MagicMock(), registry_module)
+
+    assert "Module 'my-reg-mod' outcome: unchanged" in caplog.text
+    assert result.replacements == 0
+    assert result.outcome == "unchanged"
+    assert "version is already 2.0.0" in caplog.text
+
+
+def test_process_registry_module_skips_when_no_version(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    mocker: MockerFixture,
+    registry_module: RegistryModule,
+) -> None:
+    monkeypatch.setattr(app, "get_latest_registry_version", lambda s, src: None)
+
+    with caplog.at_level(logging.INFO):
+        result = process_registry_module(mocker.MagicMock(), registry_module)
+
+    assert "Module 'my-reg-mod' outcome: skipped - no registry version could be resolved" in caplog.text
+    assert result.replacements == 0
+    assert result.outcome == "skipped"
+
+
+def test_process_registry_module_warns_when_no_targets(
+        monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+        mocker: MockerFixture,
+        registry_module: RegistryModule,
+) -> None:
+    monkeypatch.setattr(app, "get_latest_registry_version", lambda s, src: "2.0.0")
+    monkeypatch.setattr(app, "resolve_targets", lambda m: [])
+
+    with caplog.at_level(logging.INFO):
+        result = process_registry_module(mocker.MagicMock(), registry_module)
+
+    assert "Module 'my-reg-mod' outcome: unchanged" in caplog.text
+    assert "no target files resolved" in caplog.text
+    assert result.outcome == "unchanged"
