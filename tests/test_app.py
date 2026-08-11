@@ -5,9 +5,10 @@ import yaml
 import pytest
 from pytest_mock import MockerFixture
 
-from update_tf_modules import app
+from update_tf_modules import app, discovery, targets
 from update_tf_modules.app import main, process_github_module, process_registry_module
 from update_tf_modules.models import GitHubModule, RegistryModule
+from update_tf_modules.updaters import github_source, registry_source
 
 @pytest.fixture
 def manifest_data(tmp_path: Path) -> tuple[Path, list[Path], Path, list[Path]]:
@@ -89,8 +90,6 @@ def test_app_integration(
     manifest_path, glob_targets, single_file, multi_files = manifest_data
 
     tmp_root = manifest_path.parent
-    from update_tf_modules import discovery, targets
-    from update_tf_modules.updaters import github_source, registry_source
     monkeypatch.setattr(targets, "ROOT", tmp_root)
     monkeypatch.setattr(discovery, "TERRAFORM_ROOT", tmp_root / "terraform")
     monkeypatch.setattr(github_source, "ROOT", tmp_root)
@@ -129,8 +128,6 @@ def test_app_lifecycle_output(
     manifest_path, _, _, _ = manifest_data
     tmp_root = manifest_path.parent
 
-    from update_tf_modules import discovery, targets
-    from update_tf_modules.updaters import github_source, registry_source
     monkeypatch.setattr(targets, "ROOT", tmp_root)
     monkeypatch.setattr(discovery, "TERRAFORM_ROOT", tmp_root / "terraform")
     monkeypatch.setattr(github_source, "ROOT", tmp_root)
