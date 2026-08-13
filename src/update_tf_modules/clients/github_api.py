@@ -1,8 +1,11 @@
+import logging
 import os
 
 import requests
 
 from ..config import GITHUB_API
+
+logger = logging.getLogger(__name__)
 
 
 def build_github_session() -> requests.Session:
@@ -67,10 +70,10 @@ def get_latest_github_tag(
 
         raise ValueError(f"Unsupported GitHub lookup strategy: {lookup}")
     except requests.HTTPError as error:
-        print(f"[ERROR] Failed to fetch latest GitHub version for '{repo}': {error}")
+        logger.error("Failed to fetch latest GitHub version for '%s': %s", repo, error)
         return None
     except Exception as error:
-        print(f"[ERROR] Unexpected error fetching GitHub version for '{repo}': {error}")
+        logger.error("Unexpected error fetching GitHub version for '%s': %s", repo, error)
         return None
 
 def get_commit_hash_for_tag(
@@ -99,12 +102,8 @@ def get_commit_hash_for_tag(
             return tag_response.json().get("object", {}).get("sha")
         return obj.get("sha")
     except requests.HTTPError as error:
-        print(
-            f"[ERROR] Failed to fetch commit hash for tag '{tag}' in repo '{repo}': {error}"
-        )
+        logger.error("Failed to fetch commit hash for tag '%s' in repo '%s': %s", tag, repo, error)
         return None
     except Exception as error:
-        print(
-            f"[ERROR] Unexpected error fetching commit hash for tag '{tag}' in repo '{repo}': {error}"
-        )
+        logger.error("Unexpected error fetching commit hash for tag '%s' in repo '%s': %s", tag, repo, error)
         return None

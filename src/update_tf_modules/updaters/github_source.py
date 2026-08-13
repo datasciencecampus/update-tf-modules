@@ -1,7 +1,10 @@
+import logging
 from pathlib import Path
 import re
 
 from ..config import ROOT
+
+logger = logging.getLogger(__name__)
 
 def update_github_module(
     file_path: Path,
@@ -38,6 +41,6 @@ def update_github_module(
 
     if replacements > 0:
         file_path.write_text(new_content, encoding="utf-8")
-        print(f"Updated GitHub module in {file_path.relative_to(ROOT)} to {new_ref}")
+        logger.info("Updated GitHub module in %s to %s", file_path.relative_to(ROOT), new_ref)
 
     return replacements

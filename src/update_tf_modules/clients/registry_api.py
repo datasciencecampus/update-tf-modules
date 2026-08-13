@@ -1,8 +1,11 @@
+import logging
 import re
 
 import requests
 
 from ..config import TERRAFORM_REGISTRY_API
+
+logger = logging.getLogger(__name__)
 
 def build_registry_session() -> requests.Session:
     """Create an HTTP session configured for Terraform Registry requests.
@@ -43,14 +46,10 @@ def get_latest_registry_version(
             return None
         return max(version_numbers, key=semver_key)
     except requests.HTTPError as error:
-        print(
-            f"[ERROR] Failed to fetch latest version for registry module '{source}': {error}"
-        )
+        logger.error("Failed to fetch latest version for registry module '%s': %s", source, error)
         return None
     except Exception as error:
-        print(
-            f"[ERROR] Unexpected error fetching version for registry module '{source}': {error}"
-        )
+        logger.error("Unexpected error fetching version for registry module '%s': %s", source, error)
         return None
     
 
