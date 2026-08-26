@@ -1,7 +1,11 @@
 import re
+import logging
 
 from .config import TERRAFORM_ROOT
 from .models import GitHubModule, Module
+
+
+logger = logging.getLogger(__name__)
 
 def normalize_discovered_source(source: str) -> str:
     """Normalize discovered module sources for manifest key comparison.
@@ -81,6 +85,8 @@ def warn_on_unmanaged_modules(modules: list[Module]) -> None:
     unmanaged = sorted(discovered - managed)
 
     if unmanaged:
-        print("[WARN] Terraform modules were found in the repo but are not represented in the manifest:")
+        logger.warning(
+            "Terraform modules were found in the repo but are not represented in the manifest:"
+        )
         for source in unmanaged:
-            print(f"  - {source}")
+            logger.warning(f"  - {source}")
