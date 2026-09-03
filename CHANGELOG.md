@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/datasciencecampus/update-tf-modules/compare/v0.2.0...v0.2.1) (2026-09-03)
+
+
+### Refactoring
+
+* **logging:** replace package print statements with module-level… ([f552bb7](https://github.com/datasciencecampus/update-tf-modules/commit/f552bb78ae1e509d53a7a82b95d7d8f82522972a))
+
 ## [0.2.0](https://github.com/datasciencecampus/update-tf-modules/compare/v0.1.1...v0.2.0) (2026-08-26)
 
 
