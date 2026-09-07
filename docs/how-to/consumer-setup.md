@@ -62,6 +62,16 @@ Choose based on your needs:
 - Use `@vX` for automatic non-breaking updates.
 - Use `@vX.Y.Z` or a full commit SHA for reproducible builds.
 
+### Maintainer Verification
+
+Major channel tags are updated as part of this repository's release pipeline. If a major tag is ever missing or stale, maintainers can run the `Move Major Tag` workflow manually and optionally provide a stable release tag such as `v0.2.1`.
+
+To verify the current remote tag state after a release, replace `v0` with the relevant major channel if needed:
+
+```bash
+git ls-remote --tags origin "v0" "v0.*"
+```
+
 ## Example: Minimal Workflow File
 
 Save this as `.github/workflows/update-terraform-modules.yml`:
