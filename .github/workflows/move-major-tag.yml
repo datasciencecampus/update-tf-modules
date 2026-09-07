@@ -4,13 +4,18 @@ on:
   release:
     types:
       - published
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Optional stable release tag to map (for example v0.2.1). If omitted, uses latest release."
+        required: false
+        type: string
 
 permissions:
   contents: write
 
 jobs:
   move-major-tag:
-    if: ${{ !github.event.release.prerelease && !github.event.release.draft && startsWith(github.event.release.tag_name, 'v') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -18,9 +23,19 @@ jobs:
 
       - name: Move major tag to released version
         env:
-          TAG: ${{ github.event.release.tag_name }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ inputs.tag || github.event.release.tag_name }}
         run: |
           set -euo pipefail
+
+          if [[ -z "${TAG:-}" || "$TAG" == "null" ]]; then
+            TAG="$(curl -fsSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${REPO}/releases/latest" | jq -r '.tag_name')"
+          fi
+
+          if [[ -z "$TAG" || "$TAG" == "null" ]]; then
+            echo "No release tag available; skipping."
+            exit 0
+          fi
 
           if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Skipping non-stable SemVer tag: $TAG"
