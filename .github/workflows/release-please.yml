@@ -32,12 +32,12 @@ jobs:
           MAJOR: v${{ steps.release.outputs.major }}
         run: |
           set -euo pipefail
-          
+
           if [[ -z "$TAG" || "$TAG" == "null" ]]; then
             echo "Release Please did not provide a release tag; skipping major tag move."
             exit 0
           fi
-          
+
           if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Latest release is not a stable SemVer tag; skipping: $TAG"
             exit 0
