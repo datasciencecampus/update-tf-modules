@@ -112,16 +112,40 @@ jobs:
           echo "No matching branch or tag was found."
           echo ""
           echo "How to fix:"
-          echo "- Set 'with.updater_ref' to an existing branch, tag, or commit SHA"
+          echo "- Set 'with.updater_ref' to an existing branch, tag or commit SHA"
           echo "- Use 'v0' to track the current major release channel"
           echo "- Or pin to an immutable release tag like 'v0.1.1'"
           exit 1
+
+      - name: Resolve updater_ref to commit SHA
+        id: resolve_updater_ref
+        env:
+          UPDATER_REPO: datasciencecampus/update-tf-modules
+          UPDATER_REF: ${{ inputs.updater_ref }}
+        run: |
+          set -euo pipefail
+
+          # If already a SHA, use it directly.
+          if [[ "$UPDATER_REF" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
+            SHA="$UPDATER_REF"
+          else
+            # Resolve tag/branch to SHA via git ls-remote.
+            SHA="$(git ls-remote https://github.com/${UPDATER_REPO}.git "$UPDATER_REF" | awk '{print $1}')"
+          fi
+
+          if [[ -z "$SHA" ]]; then
+            echo "Failed to resolve $UPDATER_REF to a commit SHA in $UPDATER_REPO"
+            exit 1
+          fi
+
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "Resolved updater_ref '$UPDATER_REF' to commit SHA: $SHA"
 
       - name: Checkout updater package source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: datasciencecampus/update-tf-modules
-          ref: ${{ inputs.updater_ref }}
+          ref: ${{ steps.resolve_updater_ref.outputs.sha }}
           path: .update-tf-modules-tool
 
       - name: Set up Python
