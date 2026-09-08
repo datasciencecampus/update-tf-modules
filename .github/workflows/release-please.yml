@@ -14,9 +14,44 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
       - name: Run Release Please
+        id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      - name: Move major tag to latest stable release
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        env:
+          TAG: ${{ steps.release.outputs.tag_name }}
+          MAJOR: v${{ steps.release.outputs.major }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$TAG" || "$TAG" == "null" ]]; then
+            echo "Release Please did not provide a release tag; skipping major tag move."
+            exit 0
+          fi
+
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Latest release is not a stable SemVer tag; skipping: $TAG"
+            exit 0
+          fi
+          git fetch --tags origin
+
+          TARGET_SHA="$(git rev-list -n 1 "$TAG")"
+          CURRENT_SHA="$(git rev-list -n 1 "$MAJOR" 2>/dev/null || true)"
+          if [[ -n "$CURRENT_SHA" && "$CURRENT_SHA" == "$TARGET_SHA" ]]; then
+            echo "$MAJOR already points to $TAG; nothing to do."
+            exit 0
+          fi
+
+          git tag -f "$MAJOR" "$TAG"
+          git push origin "refs/tags/$MAJOR" --force
+
+          echo "Moved $MAJOR to $TAG"
