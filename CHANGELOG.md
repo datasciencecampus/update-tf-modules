@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.3.0](https://github.com/datasciencecampus/update-tf-modules/compare/v0.2.1...v0.3.0) (2026-09-08)
+
+
+### Features
+
+* resolve updater_ref to commit SHA for reproducibility ([cadf084](https://github.com/datasciencecampus/update-tf-modules/commit/cadf08432f63ba3127535adcfbfba8d49ac730d4))
+
+
+### Bug Fixes
+
+* **ci:** incorporate moving major tag as a step in release pipeline ([30d45f6](https://github.com/datasciencecampus/update-tf-modules/commit/30d45f6e4a58d39613fd63bdc8253a8d6f3ead5c))
+* **ci:** skip major-tag push when already up to date ([8cadcc9](https://github.com/datasciencecampus/update-tf-modules/commit/8cadcc9150069c8596f268b96d2798f0947513ca))
+* ensure major release tags (vX) are reliably moved on publish ([eee0bd5](https://github.com/datasciencecampus/update-tf-modules/commit/eee0bd597db0f7cec1e1795f485e4b30c6296366))
+
+
+### Documentation
+
+* add major-tag verification guidance ([9da2d33](https://github.com/datasciencecampus/update-tf-modules/commit/9da2d33c68c42064dbf0875c4174ebc815c7e00e))
+
+
+### Refactoring
+
+* **ci:** use release-please outputs for major-tag update ([66e548a](https://github.com/datasciencecampus/update-tf-modules/commit/66e548a5d5751c39f89e0330337b7a2e4732ce75))
+
 ## [0.2.1](https://github.com/datasciencecampus/update-tf-modules/compare/v0.2.0...v0.2.1) (2026-09-03)
 
 
