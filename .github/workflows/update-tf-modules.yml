@@ -1,5 +1,6 @@
 name: Update Terraform module versions
 
+# checkov:skip=CKV_GHA_7:Manual inputs are required to select the manifest, Terraform root, target branch, updater ref, and PR behavior.
 on:
   workflow_call:
     inputs:
@@ -70,6 +71,9 @@ on:
         required: false
         default: v0
         type: string
+
+permissions: {} # Deny token access by default; the update job grants only the write access it needs.
+
 concurrency:
   group: update-tf-modules-${{ github.repository }}-${{ inputs.base_branch || github.ref_name }}
   cancel-in-progress: false
@@ -78,8 +82,8 @@ jobs:
   update-modules:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
+      contents: write # Required to commit updated Terraform module versions.
+      pull-requests: write # Required to create and update the automated pull request.
     outputs:
       changed: ${{ steps.detect_changes.outputs.changed }}
       pr_number: ${{ steps.create_pull_request.outputs.pull-request-number }}

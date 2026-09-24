@@ -1,5 +1,6 @@
 name: Move Major Tag
 
+# checkov:skip=CKV_GHA_7:Manual tag input is required to repair or remap a specific stable release.
 on:
   release:
     types:
@@ -11,12 +12,13 @@ on:
         required: false
         type: string
 
-permissions:
-  contents: write
+permissions: {} # Deny token access by default; the tag-moving job grants only tag update access.
 
 jobs:
   move-major-tag:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to move the major release tag.
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

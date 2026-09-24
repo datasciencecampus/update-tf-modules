@@ -1,0 +1,24 @@
+name: Security Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+run-name: "${{ github.workflow }} - ${{ github.actor }} - ${{ github.event_name == 'pull_request' && format('PR #{0}', github.event.pull_request.number) || github.ref_name }}"
+
+permissions: {} # Deny token access by default; jobs grant only what they need.
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security-analysis:
+    name: security-analysis
+    permissions:
+      actions: read # Required for SARIF upload metadata lookups in private or internal repositories.
+      contents: read # Required to read repository contents during analysis.
+      security-events: write # Required to upload security analysis results.
+    uses: datasciencecampus/github-actions/.github/workflows/security-analysis.yml@caf4ab7c789a34efb07d61113830bcb67d634a38 # v1.7.0
