@@ -1,5 +1,6 @@
 name: Update Terraform module versions
 
+# checkov:skip=CKV_GHA_7:Manual inputs are required to select the manifest, Terraform root, target branch, updater ref, and PR behavior.
 on:
   workflow_call:
     inputs:
@@ -43,7 +44,33 @@ on:
         description: "Pull request URL when a PR is created"
         value: ${{ jobs.update-modules.outputs.pr_url }}
 
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      manifest_path:
+        description: "Path to manifest file in this repository"
+        required: false
+        default: .github/update-modules-manifest.yml
+        type: string
+      terraform_root:
+        description: "Root directory containing Terraform code to validate and include in PRs"
+        required: false
+        default: terraform
+        type: string
+      base_branch:
+        description: "Base branch for pull requests"
+        required: false
+        default: main
+        type: string
+      create_pr:
+        description: "Whether to create a pull request after changes are made"
+        required: false
+        default: true
+        type: boolean
+      updater_ref:
+        description: "Git ref (branch/tag/SHA) for the update-tf-modules repository"
+        required: false
+        default: v0
+        type: string
 
 permissions: {} # Deny token access by default; the update job grants only the write access it needs.
 
@@ -54,12 +81,6 @@ concurrency:
 jobs:
   update-modules:
     runs-on: ubuntu-latest
-    env:
-      MANIFEST_PATH: ${{ inputs.manifest_path || '.github/update-modules-manifest.yml' }}
-      TERRAFORM_ROOT: ${{ inputs.terraform_root || 'terraform' }}
-      BASE_BRANCH: ${{ inputs.base_branch || 'main' }}
-      CREATE_PR: ${{ github.event_name == 'workflow_dispatch' || inputs.create_pr }}
-      UPDATER_REF: ${{ inputs.updater_ref || 'v0' }}
     permissions:
       contents: write # Required to commit updated Terraform module versions.
       pull-requests: write # Required to create and update the automated pull request.
@@ -75,6 +96,7 @@ jobs:
       - name: Validate updater_ref exists
         env:
           UPDATER_REPO: datasciencecampus/update-tf-modules
+          UPDATER_REF: ${{ inputs.updater_ref }}
         run: |
           set -euo pipefail
 
@@ -103,6 +125,7 @@ jobs:
         id: resolve_updater_ref
         env:
           UPDATER_REPO: datasciencecampus/update-tf-modules
+          UPDATER_REF: ${{ inputs.updater_ref }}
         run: |
           set -euo pipefail
 
@@ -145,36 +168,36 @@ jobs:
       - name: Run module update script
         env:
           GITHUB_TOKEN: ${{ secrets.token || secrets.GITHUB_TOKEN }}
-          # Keep Python discovery aligned with the Terraform root being processed.
-          UPDATE_TF_MODULES_TARGET_TERRAFORM_ROOT: ${{ env.TERRAFORM_ROOT }}
+          # Keep Python discovery aligned with workflow terraform_root input.
+          UPDATE_TF_MODULES_TARGET_TERRAFORM_ROOT: ${{ inputs.terraform_root }}
         run: |
-          update-tf-modules --manifest-path "$MANIFEST_PATH"
+          update-tf-modules --manifest-path "${{ inputs.manifest_path }}"
 
       - name: Show changed files
         run: |
           git status --short
           git diff --stat
-          git diff -- "$TERRAFORM_ROOT"
+          git diff -- "${{ inputs.terraform_root }}"
 
       - name: Detect Terraform changes
         id: detect_changes
         run: |
-          if git diff --quiet -- "$TERRAFORM_ROOT"; then
+          if git diff --quiet -- "${{ inputs.terraform_root }}"; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "No Terraform changes detected under $TERRAFORM_ROOT"
+            echo "No Terraform changes detected under ${{ inputs.terraform_root }}"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "Terraform changes detected under $TERRAFORM_ROOT"
+            echo "Terraform changes detected under ${{ inputs.terraform_root }}"
           fi
 
       - name: Check Terraform formatting
         if: ${{ steps.detect_changes.outputs.changed == 'true' }}
         run: |
-          terraform fmt -check -recursive "$TERRAFORM_ROOT"
+          terraform fmt -check -recursive "${{ inputs.terraform_root }}"
 
       - name: Create pull request
         id: create_pull_request
-        if: ${{ env.CREATE_PR == 'true' && steps.detect_changes.outputs.changed == 'true' }}
+        if: ${{ inputs.create_pr && steps.detect_changes.outputs.changed == 'true' }}
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         continue-on-error: true
         with:
@@ -184,13 +207,13 @@ jobs:
           body: |
             Automated update of Terraform module versions.
           branch: automation/update-terraform-modules
-          base: ${{ env.BASE_BRANCH }}
+          base: ${{ inputs.base_branch }}
           delete-branch: true
           add-paths: |
-            ${{ env.TERRAFORM_ROOT }}/**/*.tf
+            ${{ inputs.terraform_root }}/**/*.tf
 
       - name: Validate pull request creation result
-        if: ${{ env.CREATE_PR == 'true' && steps.detect_changes.outputs.changed == 'true' }}
+        if: ${{ inputs.create_pr && steps.detect_changes.outputs.changed == 'true' }}
         run: |
           if [[ "${{ steps.create_pull_request.outcome }}" != "success" ]]; then
             echo "Pull request creation failed."
@@ -210,7 +233,7 @@ jobs:
           echo "## update-tf-modules result" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- changed: ${{ steps.detect_changes.outputs.changed }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- create_pr: $CREATE_PR" >> "$GITHUB_STEP_SUMMARY"
+          echo "- create_pr: ${{ inputs.create_pr }}" >> "$GITHUB_STEP_SUMMARY"
           PR_NUMBER="${{ steps.create_pull_request.outputs.pull-request-number || 'n/a' }}"
           echo "- pr_number: ${PR_NUMBER}" >> "$GITHUB_STEP_SUMMARY"
           echo "- pr_url: ${{ steps.create_pull_request.outputs.pull-request-url || 'n/a' }}" >> "$GITHUB_STEP_SUMMARY"
