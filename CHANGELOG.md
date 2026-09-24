@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.0](https://github.com/datasciencecampus/update-tf-modules/compare/v0.3.0...v0.4.0) (2026-09-24)
+
+
+### Features
+
+* add security analysis workflow and configuration files ([c05ffd6](https://github.com/datasciencecampus/update-tf-modules/commit/c05ffd699bbf70a6bbf1cf8b45994f697b150bb6))
+
+
+### Bug Fixes
+
+* correct permissions structure in move-major-tag workflow ([20b4791](https://github.com/datasciencecampus/update-tf-modules/commit/20b4791e9195a0537042ada408a874841b14b6f5))
+
+
+### Refactoring
+
+* enhance workflow_dispatch inputs for move-major-tag and update-tf-modules workflows ([537e05f](https://github.com/datasciencecampus/update-tf-modules/commit/537e05fc8dddae83eba069722728a242fbcef0e3))
+* simplify workflow_dispatch inputs and use environment variables ([9e32e9e](https://github.com/datasciencecampus/update-tf-modules/commit/9e32e9e0826f46f6e3bbb2c612bdb875fd15aa94))
+* simplify workflow_dispatch inputs for move-major-tag workflow ([cd5e895](https://github.com/datasciencecampus/update-tf-modules/commit/cd5e8951758c05d8340e19bca68d2ee007856c54))
+* update permissions structure across workflows for clarity and security ([01ee76e](https://github.com/datasciencecampus/update-tf-modules/commit/01ee76e8ee58794a8bb841af96734be45c90070e))
+
 ## [0.3.0](https://github.com/datasciencecampus/update-tf-modules/compare/v0.2.1...v0.3.0) (2026-09-08)
 
 
