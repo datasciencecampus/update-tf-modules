@@ -4,12 +4,7 @@ on:
   release:
     types:
       - published
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: "Optional stable release tag to map (for example v0.2.1). If omitted, uses latest release."
-        required: false
-        type: string
+  workflow_dispatch: {}
 
 permissions: {}
 
@@ -25,7 +20,7 @@ jobs:
       - name: Move major tag to released version
         env:
           REPO: ${{ github.repository }}
-          TAG: ${{ inputs.tag || github.event.release.tag_name }}
+          TAG: ${{ github.event.release.tag_name }}
         run: |
           set -euo pipefail
 
