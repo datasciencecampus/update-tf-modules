@@ -1,7 +1,6 @@
 name: Test reusable workflow contract
 
-permissions:
-  contents: read
+permissions: {} # Deny token access by default; the reusable workflow job grants read access.
 
 on:
   workflow_dispatch:
@@ -17,6 +16,8 @@ on:
 jobs:
   invoke-reusable-workflow:
     uses: ./.github/workflows/update-tf-modules.yml
+    permissions:
+      contents: read # Required for the reusable workflow contract test to read repository contents.
     with:
       manifest_path: .github/update-modules-manifest.yml
       create_pr: false

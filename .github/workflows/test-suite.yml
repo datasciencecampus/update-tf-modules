@@ -4,12 +4,13 @@ on:
   pull_request:
     branches: [ "main" ] 
 
-permissions:
-  contents: read
+permissions: {} # Deny token access by default; the test job grants checkout access.
 
 jobs:
   run-tests:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # Required to check out the repository before running tests.
 
     steps:
       - name: Checkout code

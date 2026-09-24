@@ -44,6 +44,9 @@ on:
         value: ${{ jobs.update-modules.outputs.pr_url }}
 
   workflow_dispatch: {}
+
+permissions: {} # Deny token access by default; the update job grants only the write access it needs.
+
 concurrency:
   group: update-tf-modules-${{ github.repository }}-${{ inputs.base_branch || github.ref_name }}
   cancel-in-progress: false
@@ -58,8 +61,8 @@ jobs:
       CREATE_PR: ${{ github.event_name == 'workflow_dispatch' || inputs.create_pr }}
       UPDATER_REF: ${{ inputs.updater_ref || 'v0' }}
     permissions:
-      contents: write
-      pull-requests: write
+      contents: write # Required to commit updated Terraform module versions.
+      pull-requests: write # Required to create and update the automated pull request.
     outputs:
       changed: ${{ steps.detect_changes.outputs.changed }}
       pr_number: ${{ steps.create_pull_request.outputs.pull-request-number }}

@@ -6,8 +6,7 @@ on:
   pull_request:
     types: [opened, reopened]
 
-permissions:
-  contents: read # Required by the reusable project-routing workflows.
+permissions: {} # Deny token access by default; project-routing jobs grant read access.
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.issue.number || github.event.pull_request.number }}
@@ -17,6 +16,8 @@ jobs:
   add-issue-to-projects:
     if: github.event_name == 'issues'
     uses: datasciencecampus/github-actions/.github/workflows/add-issue-to-projects.yml@caf4ab7c789a34efb07d61113830bcb67d634a38 # v1.7.0
+    permissions:
+      contents: read # Required by the reusable issue-routing workflow.
     secrets:
       PROJECT_ROUTER_BOT_PRIVATE_KEY: ${{ secrets.PROJECT_ROUTER_BOT_PRIVATE_KEY }}
     with:
@@ -27,6 +28,8 @@ jobs:
   add-pr-to-projects:
     if: github.event_name == 'pull_request'
     uses: datasciencecampus/github-actions/.github/workflows/add-pr-to-projects.yml@caf4ab7c789a34efb07d61113830bcb67d634a38 # v1.7.0
+    permissions:
+      contents: read # Required by the reusable pull-request routing workflow.
     secrets:
       PROJECT_ROUTER_BOT_PRIVATE_KEY: ${{ secrets.PROJECT_ROUTER_BOT_PRIVATE_KEY }}
     with:
