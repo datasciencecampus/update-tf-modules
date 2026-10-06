@@ -15,7 +15,7 @@ on:
 
 jobs:
   invoke-reusable-workflow:
-    uses: ./.github/workflows/update-tf-modules.yml
+    uses: $/.github/workflows/update-tf-modules.yml
     permissions:
       contents: read # Required for the reusable workflow contract test to read repository contents.
     with:
