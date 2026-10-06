@@ -10,6 +10,7 @@ permissions: {} # Deny token access by default; the release job grants only what
 
 jobs:
   release-please:
+    name: Create release
     runs-on: ubuntu-latest
     permissions:
       contents: write # Required to create release commits and move the major tag.

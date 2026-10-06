@@ -16,6 +16,7 @@ permissions: {} # Deny token access by default; the tag-moving job grants only t
 
 jobs:
   move-major-tag:
+    name: Move major release tag
     runs-on: ubuntu-latest
     permissions:
       contents: write # Required to move the major release tag.
