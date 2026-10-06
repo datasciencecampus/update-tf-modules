@@ -4,9 +4,9 @@ This guide helps you diagnose and fix common issues with PR creation, token auth
 
 ## Permissions Matrix
 
-Your GitHub Actions job must declare the required permissions for the workflow to create PRs. Here's what's required for each feature:
+The job that calls this reusable workflow must declare both permissions below. The reusable workflow's update job requests them unconditionally, so they are required even when `create_pr=false`.
 
-### PR Creation Requires
+### Caller Job Permissions
 
 ```yaml
 permissions:
@@ -22,15 +22,11 @@ permissions:
 | Create/update PR | Fails | `Resource not accessible by integration` |
 | Read repo contents | Works | No special permission needed |
 
-### Disabling PR Creation
+### When `create_pr=false`
 
-If `create_pr=false`, PR permissions are **not required**:
+No PR is opened, but the caller must still grant both permissions. GitHub validates the called workflow's declared permissions before evaluating `create_pr`; this input only skips the PR-creation step at runtime.
 
-```yaml
-permissions:
-  contents: write      # Still needed for commits
-  # pull-requests: write  # Not needed if create_pr=false
-```
+Because the called job still receives these write permissions, use this mode only from trusted workflows. GitHub downgrades `GITHUB_TOKEN` permissions for pull requests from forks, so this reusable workflow cannot be invoked successfully from an untrusted fork pull request. Skip the call for fork PRs or use a separate read-only validation path.
 
 ## Token Configuration
 

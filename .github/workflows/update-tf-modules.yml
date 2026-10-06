@@ -80,6 +80,7 @@ concurrency:
 
 jobs:
   update-modules:
+    name: Update Terraform modules
     runs-on: ubuntu-latest
     permissions:
       contents: write # Required to commit updated Terraform module versions.
@@ -92,6 +93,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Validate updater_ref exists
         env:
@@ -151,6 +154,7 @@ jobs:
           repository: datasciencecampus/update-tf-modules
           ref: ${{ steps.resolve_updater_ref.outputs.sha }}
           path: .update-tf-modules-tool
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -158,7 +162,7 @@ jobs:
           python-version: "3.12"
 
       - name: Set up Terraform
-        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
 
       - name: Install package
         run: |
@@ -170,35 +174,43 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.token || secrets.GITHUB_TOKEN }}
           # Keep Python discovery aligned with workflow terraform_root input.
           UPDATE_TF_MODULES_TARGET_TERRAFORM_ROOT: ${{ inputs.terraform_root }}
+          MANIFEST_PATH: ${{ inputs.manifest_path }}
         run: |
-          update-tf-modules --manifest-path "${{ inputs.manifest_path }}"
+          update-tf-modules --manifest-path "$MANIFEST_PATH"
 
       - name: Show changed files
+        env:
+          TERRAFORM_ROOT: ${{ inputs.terraform_root }}
         run: |
           git status --short
           git diff --stat
-          git diff -- "${{ inputs.terraform_root }}"
+          git diff -- "$TERRAFORM_ROOT"
 
       - name: Detect Terraform changes
         id: detect_changes
+        env:
+          TERRAFORM_ROOT: ${{ inputs.terraform_root }}
         run: |
-          if git diff --quiet -- "${{ inputs.terraform_root }}"; then
+          if git diff --quiet -- "$TERRAFORM_ROOT"; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "No Terraform changes detected under ${{ inputs.terraform_root }}"
+            echo "No Terraform changes detected under $TERRAFORM_ROOT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "Terraform changes detected under ${{ inputs.terraform_root }}"
+            echo "Terraform changes detected under $TERRAFORM_ROOT"
           fi
 
       - name: Check Terraform formatting
         if: ${{ steps.detect_changes.outputs.changed == 'true' }}
+        env:
+          TERRAFORM_ROOT: ${{ inputs.terraform_root }}
         run: |
-          terraform fmt -check -recursive "${{ inputs.terraform_root }}"
+          terraform fmt -check -recursive "$TERRAFORM_ROOT"
 
       - name: Create pull request
         id: create_pull_request
         if: ${{ inputs.create_pr && steps.detect_changes.outputs.changed == 'true' }}
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+        # zizmor: ignore[superfluous-actions] required to commit and push selected files, maintain the PR branch, and expose PR outputs
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         continue-on-error: true
         with:
           token: ${{ secrets.token || secrets.GITHUB_TOKEN }}
@@ -214,8 +226,10 @@ jobs:
 
       - name: Validate pull request creation result
         if: ${{ inputs.create_pr && steps.detect_changes.outputs.changed == 'true' }}
+        env:
+          PR_OUTCOME: ${{ steps.create_pull_request.outcome }}
         run: |
-          if [[ "${{ steps.create_pull_request.outcome }}" != "success" ]]; then
+          if [[ "$PR_OUTCOME" != "success" ]]; then
             echo "Pull request creation failed."
             echo "Most common causes:"
             echo "- Token lacks caller repository permissions (need contents: write and pull-requests: write)"
@@ -229,11 +243,15 @@ jobs:
 
       - name: Publish workflow result summary
         if: ${{ always() }}
+        env:
+          CHANGED: ${{ steps.detect_changes.outputs.changed }}
+          CREATE_PR: ${{ inputs.create_pr }}
+          PR_NUMBER: ${{ steps.create_pull_request.outputs.pull-request-number || 'n/a' }}
+          PR_URL: ${{ steps.create_pull_request.outputs.pull-request-url || 'n/a' }}
         run: |
           echo "## update-tf-modules result" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- changed: ${{ steps.detect_changes.outputs.changed }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- create_pr: ${{ inputs.create_pr }}" >> "$GITHUB_STEP_SUMMARY"
-          PR_NUMBER="${{ steps.create_pull_request.outputs.pull-request-number || 'n/a' }}"
+          echo "- changed: $CHANGED" >> "$GITHUB_STEP_SUMMARY"
+          echo "- create_pr: $CREATE_PR" >> "$GITHUB_STEP_SUMMARY"
           echo "- pr_number: ${PR_NUMBER}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- pr_url: ${{ steps.create_pull_request.outputs.pull-request-url || 'n/a' }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- pr_url: $PR_URL" >> "$GITHUB_STEP_SUMMARY"
