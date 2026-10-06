@@ -61,8 +61,11 @@ jobs:
 
           MAJOR="$(echo "$TAG" | sed -E 's/^(v[0-9]+)\..*/\1/')"
 
-          git fetch --tags origin
+          AUTH_HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 --wrap=0)"
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH_HEADER" \
+            fetch --tags origin
           git tag -f "$MAJOR" "$TAG"
-          git push origin "refs/tags/$MAJOR" --force
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH_HEADER" \
+            push origin "refs/tags/$MAJOR" --force
 
           echo "Moved $MAJOR to $TAG"
