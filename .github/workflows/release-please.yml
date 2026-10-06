@@ -39,6 +39,7 @@ jobs:
         env:
           TAG: ${{ steps.release.outputs.tag_name }}
           MAJOR: v${{ steps.release.outputs.major }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
 
@@ -51,7 +52,9 @@ jobs:
             echo "Latest release is not a stable SemVer tag; skipping: $TAG"
             exit 0
           fi
-          git fetch --tags origin
+          AUTH_HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 --wrap=0)"
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH_HEADER" \
+            fetch --tags origin
 
           TARGET_SHA="$(git rev-list -n 1 "$TAG")"
           CURRENT_SHA="$(git rev-list -n 1 "$MAJOR" 2>/dev/null || true)"
@@ -61,6 +64,7 @@ jobs:
           fi
 
           git tag -f "$MAJOR" "$TAG"
-          git push origin "refs/tags/$MAJOR" --force
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH_HEADER" \
+            push origin "refs/tags/$MAJOR" --force
 
           echo "Moved $MAJOR to $TAG"
