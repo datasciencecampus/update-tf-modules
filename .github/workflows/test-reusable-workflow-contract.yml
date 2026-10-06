@@ -22,7 +22,8 @@ jobs:
     name: Invoke reusable workflow
     uses: $/.github/workflows/update-tf-modules.yml
     permissions:
-      contents: read # Required for the reusable workflow contract test to read repository contents.
+      contents: write # Must match the reusable workflow job's maximum requested access.
+      pull-requests: write # Must match the reusable workflow job's maximum requested access.
     with:
       manifest_path: .github/update-modules-manifest.yml
       create_pr: false
