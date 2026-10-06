@@ -8,6 +8,11 @@ on:
 
 permissions: {} # Deny token access by default; the release job grants only what it needs.
 
+concurrency:
+  # Shared with move-major-tag.yml to serialize release and tag updates.
+  group: release-management-${{ github.repository }}
+  cancel-in-progress: false
+
 jobs:
   release-please:
     name: Create release
