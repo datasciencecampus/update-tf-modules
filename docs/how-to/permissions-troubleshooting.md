@@ -16,11 +16,7 @@ permissions:
 
 ### Without Permissions
 
-| Action | Result | Error |
-|--------|--------|-------|
-| Create branch | Fails | `Resource not accessible by integration` |
-| Create/update PR | Fails | `Resource not accessible by integration` |
-| Read repo contents | Works | No special permission needed |
+If the caller cannot grant both write permissions requested by the reusable workflow, GitHub rejects the workflow call before any jobs or steps run. No operations in the called workflow, including reading repository contents, are reached.
 
 ### When `create_pr=false`
 
