@@ -1,6 +1,6 @@
 name: Test reusable workflow contract
 
-permissions: {} # Deny token access by default; the reusable workflow job grants read access.
+permissions: {} # Deny token access by default; the caller job grants the write access required by the reusable workflow.
 
 on:
   workflow_dispatch:
