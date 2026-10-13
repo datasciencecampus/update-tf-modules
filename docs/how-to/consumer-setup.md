@@ -18,7 +18,7 @@ Or manually create `.github/update-modules-manifest.yml`. See [Manifest Schema](
 
 ### 2. Call the Workflow
 
-In your GitHub Actions workflow, add a job that calls this reusable workflow. Note that your GitHub Actions job must declare the required permissions:
+In your GitHub Actions workflow, add a job that calls this reusable workflow and grant it both permissions below. They are required even when `create_pr: false`, because the reusable workflow declares write access on its update job unconditionally; GitHub validates this before evaluating the input. See [Permissions & Troubleshooting](permissions-troubleshooting.md) for the fork pull request limitation.
 
 ```yaml
 permissions:
