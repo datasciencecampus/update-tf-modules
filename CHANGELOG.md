@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.1](https://github.com/datasciencecampus/update-tf-modules/compare/v0.4.0...v0.4.1) (2026-10-13)
+
+
+### Bug Fixes
+
+* clarify permissions comment in reusable workflow contract ([9c4c84d](https://github.com/datasciencecampus/update-tf-modules/commit/9c4c84de0097b9cdb7eb8b27798f8edfaee7acee))
+* remove redundant error table for permissions in troubleshooting guide ([4669c60](https://github.com/datasciencecampus/update-tf-modules/commit/4669c60097e056f9fc47f87d09c65c78d82d4f56))
+* tighten controls around who can access the GITHUB_TOKEN ([fc9348c](https://github.com/datasciencecampus/update-tf-modules/commit/fc9348ccd1f93d10b470d2745ffe30417b78e7d6))
+
 ## [0.4.0](https://github.com/datasciencecampus/update-tf-modules/compare/v0.3.0...v0.4.0) (2026-09-24)
 
 
